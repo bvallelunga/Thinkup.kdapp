@@ -1,4 +1,4 @@
-/* Compiled by kdc on Fri Jul 25 2014 21:56:58 GMT+0000 (UTC) */
+/* Compiled by kdc on Fri Jul 25 2014 22:01:17 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -258,7 +258,7 @@ ThinkupMainView = (function(_super) {
 
   domain = "" + (KD.nick()) + ".kd.io";
 
-  github = "https://raw.githubusercontent.com/bvallelunga/Thinkup.kdapp/master";
+  github = "https://rest.kd.io/bvallelunga/Thinkup.kdapp/master";
 
   png = "" + github + "/resources/logo.png";
 

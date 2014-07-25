@@ -25,7 +25,7 @@ class ThinkupInstallerController extends KDController
     @updateState state if state
     @emit "status-update", message, percentage 
   
-  init:->
+  init: ->
     @kiteHelper.getKite().then (kite)=>
       kite.fsExists(path: existingFile).then (state)=>
         unless state

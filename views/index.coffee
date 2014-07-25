@@ -2,7 +2,7 @@ class ThinkupMainView extends KDView
   
   appName                 = "Thinkup"
   domain                  = "#{KD.nick()}.kd.io"
-  github                  = "https://raw.githubusercontent.com/bvallelunga/Thinkup.kdapp/master"
+  github                  = "https://rest.kd.io/bvallelunga/Thinkup.kdapp/master"
   png                     = "#{github}/resources/logo.png"
   launchURL               = "https://#{domain}/thinkup"
   description             = """   
@@ -22,7 +22,7 @@ class ThinkupMainView extends KDView
     @Installer = new ThinkupInstallerController
     super options, data
   
-  viewAppended:->
+  viewAppended: ->
     
     @addSubView @container = new KDCustomHTMLView
       tagName       : 'div'
