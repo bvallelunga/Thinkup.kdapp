@@ -1,0 +1,107 @@
+/* Mixins */
+/* App Styling */
+.Thinkup-installer {
+  width: 100%;
+  height: 100%%;
+  overflow: auto;
+}
+.Thinkup-installer .container {
+  width: 800px;
+  margin: 50px auto 20px auto;
+  overflow: visible;
+}
+.Thinkup-installer .container .progressbar-container {
+  height: 40px;
+  border-radius: 5px;
+  width: 800px;
+}
+.Thinkup-installer .container .progressbar-container span,
+.Thinkup-installer .container .progressbar-container .bar span {
+  text-shadow: none !important;
+}
+.Thinkup-installer .container .light-label {
+  top: 13px;
+  left: 13px;
+  font-size: 15px;
+}
+.Thinkup-installer .container .toggle-button {
+  position: absolute;
+  top: 253px;
+  left: 703px;
+  z-index: 4;
+  height: 28px;
+  width: 100px;
+}
+.Thinkup-installer .container .toggle-button > .button-title {
+  font-size: 12px;
+}
+.Thinkup-installer .container .logo {
+  width: 200px;
+  left: 50%;
+  position: relative;
+  margin-left: -110px;
+  margin-top: 10px;
+}
+.Thinkup-installer .container .button-container {
+  text-align: center;
+}
+.Thinkup-installer .container .button-container .button {
+  margin: 15px;
+}
+.Thinkup-installer .container .progressbar-container {
+  margin: 10px 0 0 0;
+  height: 30px;
+  border: none;
+  border-radius: none;
+}
+.Thinkup-installer .container .progressbar-container > .dark-label {
+  font-size: 14px;
+  top: 8px;
+  left: 8px;
+  text-align: left;
+}
+.Thinkup-installer .container .progressbar-container .bar {
+  background: #1AAF5D;
+  border-radius: 0;
+}
+.Thinkup-installer .container .help {
+  margin-top: -5px;
+  font-size: 14px;
+  line-height: 1.7;
+  color: #555;
+}
+.Thinkup-installer .container .help p {
+  padding: 0 0 20px;
+}
+.Thinkup-installer .container .help a {
+  text-decoration: underline;
+  color: black;
+}
+.Thinkup-installer .container .help b {
+  text-decoration: none;
+  font-weight: bold;
+}
+.Thinkup-installer .container .bar > .light-label {
+  font-size: 14px;
+  top: 8px;
+  left: 8px;
+  text-align: left;
+  text-decoration: none;
+}
+.Thinkup-installer .container .running-link {
+  text-align: center;
+  width: 800px;
+  padding: 15px 0;
+  border-bottom: 1px solid #ddd;
+  border-top: 1px solid #ddd;
+  background: #eee;
+  margin-bottom: 15px;
+}
+.Thinkup-installer .container .running-link a {
+  text-decoration: none;
+  color: blue;
+  text-shadow: none;
+}
+.Thinkup-installer .container .picture {
+  width: 800px;
+}

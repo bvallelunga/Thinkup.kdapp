@@ -1,0 +1,38 @@
+{
+  "background": false,
+  "behavior": "application",
+  "version": "0.1",
+  "title": "Thinkup",
+  "name": "Thinkup",
+  "identifier": "com.koding.apps.thinkup",
+  "path": "~/Applications/Thinkup",
+  "homepage": "bvallelunga.kd.io/thinkup",
+  "repository": "git://github.com/bvallelunga/thinkup.kdapp.git",
+  "description": "Thinkup : a Koding application created with the blank template.",
+  "category": "web-app",
+  "source": {
+    "blocks": {
+      "app": {
+        "files": [
+          "./controllers/kiteHelper.coffee",
+          "./controllers/installer.coffee",
+          "./views/index.coffee",
+          "./index.coffee"
+        ]
+      }
+    },
+    "stylesheets": [
+      "./resources/style.css"
+    ],
+    "less": [
+      "./resources/style.less"
+    ]
+  },
+  "options": {
+    "type": "tab"
+  },
+  "icns": {
+    "128": "./resources/icon.128.png"
+  },
+  "fileTypes": []
+}
