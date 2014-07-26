@@ -3,12 +3,9 @@ class KiteHelper extends KDController
   vmIsStarting: false
   
   getReady:->
-
     new Promise (resolve, reject) =>
-
       {JVM} = KD.remote.api
       JVM.fetchVmsByContext (err, vms)=>
-
         console.warn err  if err
         return unless vms
 
@@ -30,11 +27,8 @@ class KiteHelper extends KDController
     return @_vm
 
   getKite:->
-
     new Promise (resolve, reject)=>
-
       @getReady().then =>
-
         vm = @getVm().hostnameAlias
         {vmController} = KD.singletons
 
@@ -57,11 +51,8 @@ class KiteHelper extends KDController
             resolve kite
 
   run:(options, callback)->
-    
-    # Set it to 10 min if not given
-    options.timeout ?= 10 * 60 * 1000
-    
     @getKite().then (kite)->
+      options.timeout ?= 10 * 60 * 1000
       kite.options.timeout = options.timeout
       kite.exec(options).then (result)->
         if callback

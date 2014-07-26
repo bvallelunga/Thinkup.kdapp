@@ -24,25 +24,42 @@
   overflow: auto;
   
   .container {
-    width: 800px;
+    width: 600px;
     margin: 50px auto 20px auto;  
     overflow: visible;
   
     .progressbar-container {
       height: 40px; 
       border-radius: 5px;
-      width: 800px;
+      margin: 10px 0 0 0;
+      height: 30px;
+      border: none;
+      border-radius: none;
+      
+      & > .dark-label {
+        font-size: 14px;
+        top: 8px;
+        left: 8px;
+        text-align: left;
+      }
       
       span,
       .bar span {
         text-shadow: none !important;
       }
-    }
     
-    .light-label {
-      top: 13px;
-      left: 13px;
-      font-size: 15px;
+      .bar {
+        background:#1AAF5D;
+        border-radius:0;
+        
+        & > .light-label {
+          font-size: 14px;
+          top: 8px;
+          left: 8px;
+          text-align: left;
+          text-decoration: none;
+        }
+      }
     }
     
     .toggle-button {
@@ -63,7 +80,7 @@
       left: 50%;
       position: relative;
       margin-left: -110px;
-      margin-top: 10px;
+      margin-top: 20px;
     }
     
     .button-container {
@@ -74,33 +91,12 @@
       }
     }
     
-    .progressbar-container {
-      margin: 10px 0 0 0;
-      height: 30px;
-      border: none;
-      border-radius: none;
-      
-      & > .dark-label {
-        font-size: 14px;
-        top: 8px;
-        left: 8px;
-        text-align: left;
-      }
-    
-      .bar {
-        background:#1AAF5D;
-        border-radius:0;
-      }
-    }
-    
-    .help {
-      margin-top: -5px;
-      font-size: 14px;
-      line-height: 1.7;
+    .description {
+      font-size: 16px;
       color: #555;
     
       p {
-      padding: 0 0 20px;
+        padding: 10px 0;
       }
     
       a {
@@ -108,23 +104,18 @@
         color: black; 
       }
     
-      b {
-      text-decoration: none;
-      font-weight: bold;
+      b, .bold {
+        text-decoration: none;
+        font-weight: bold;
       }
-    }
-    
-    .bar > .light-label {
-      font-size: 14px;
-      top: 8px;
-      left: 8px;
-      text-align: left;
-      text-decoration: none;
+      
+      .center {
+        text-align: center;
+      }
     }
     
     .running-link {
       text-align: center;
-      width: 800px;
       padding: 15px 0;
       border-bottom: 1px solid #ddd;
       border-top: 1px solid #ddd;

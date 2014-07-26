@@ -6,20 +6,19 @@ class ThinkupMainView extends KDView
     super options, data
   
   viewAppended: ->
-    
     @addSubView @container = new KDCustomHTMLView
       tagName       : 'div'
       cssClass      : 'container'
     
-    @container.addSubView @header = new KDHeaderView
+    @container.addSubView new KDHeaderView
       title         : "#{appName} Installer"
       type          : "big"
 
-    @container.addSubView @logo = new KDCustomHTMLView
+    @container.addSubView new KDCustomHTMLView
       tagName       : 'img'
       cssClass      : 'logo'
       attributes    :
-        src         : png
+        src         : logo
     
     @container.addSubView @progress = new KDProgressBarView
       initial       : 100
@@ -57,8 +56,8 @@ class ThinkupMainView extends KDView
       callback      : =>
         @presentModal @Installer.bound("command"), UNINSTALL
 
-    @container.addSubView @content = new KDCustomHTMLView
-      cssClass : "help"
+    @container.addSubView new KDCustomHTMLView
+      cssClass : "description"
       partial  : description
     
     KD.utils.defer =>

@@ -17,11 +17,15 @@ class ThinkupInstallerController extends KDController
   
   init: ->
     @kiteHelper.getKite().then (kite)=>
-      kite.fsExists(path: existingFile).then (state)=>
+      kite.fsExists path: installChecker
+      .then (state)=>
         unless state
           @announce "#{appName} not installed", NOT_INSTALLED
         else
           @announce "#{appName} is installed", INSTALLED
+      .catch (err)=>
+          @announce "Failed to see if #{appName} is installed", FAILED
+          throw err
 
   command: (command, password)->
     switch command
@@ -35,7 +39,7 @@ class ThinkupInstallerController extends KDController
     @watcher.watch()
     
     @kiteHelper.run
-      command: "curl -sL #{github}/scripts/#{name}.sh | bash -s #{user} #{outPath}"
+      command: "curl -sL #{github}/scripts/#{name}.sh | bash -s #{user} #{logger}"
       password: password
     , (err, res)=>
       @watcher.stopWatching()
@@ -50,17 +54,16 @@ class ThinkupInstallerController extends KDController
 
   configureWatcher: ->
     @kiteHelper.run 
-      command : "mkdir -p #{outPath}"
+      command : "mkdir -p #{logger}"
     , (err)=>
       unless err
-        @watcher = new FSWatcher path : outPath
+        @watcher = new FSWatcher path : logger
         @watcher.fileAdded = (change)=>
           {name} = change.file
           [percentage, status] = name.split '-'
           @announce status, WORKING, percentage
       else
         return throw err
-      
   
   updateState: (state)->
     @lastState = @state

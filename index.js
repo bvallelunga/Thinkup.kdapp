@@ -1,35 +1,35 @@
-/* Compiled by kdc on Sat Jul 26 2014 00:42:08 GMT+0000 (UTC) */
+/* Compiled by kdc on Sat Jul 26 2014 01:26:21 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
   var appView = window.appPreview
 }
 /* BLOCK STARTS: /home/bvallelunga/Applications/Thinkup.kdapp/config.coffee */
-var FAILED, INSTALL, INSTALLED, NOT_INSTALLED, REINSTALL, UNINSTALL, WORKING, WRONG_PASSWORD, app, appName, description, domain, existingFile, github, launchURL, outPath, png, session, user, _ref;
+var FAILED, INSTALL, INSTALLED, NOT_INSTALLED, REINSTALL, UNINSTALL, WORKING, WRONG_PASSWORD, app, appName, description, domain, github, installChecker, launchURL, logger, logo, session, user, _ref;
 
-app = "thinkup";
-
-appName = "Thinkup";
+_ref = [0, 1, 2, 3, 4, 5, 6, 7], NOT_INSTALLED = _ref[0], INSTALLED = _ref[1], WORKING = _ref[2], FAILED = _ref[3], WRONG_PASSWORD = _ref[4], INSTALL = _ref[5], REINSTALL = _ref[6], UNINSTALL = _ref[7];
 
 user = KD.nick();
 
 domain = "" + user + ".kd.io";
 
-github = "https://rest.kd.io/bvallelunga/Thinkup.kdapp/master";
-
-png = "" + github + "/resources/logo.png";
-
-launchURL = "https://" + domain + "/thinkup/install/";
-
-existingFile = "/home/" + user + "/Web/" + app;
-
 session = (Math.random() + 1).toString(36).substring(7);
 
-outPath = "/tmp/_" + appName + "Installer.out/" + session;
+app = "thinkup";
 
-description = "   \n<p><br><b>From <a href=\"https://getcockpit.com/about\">https://getcockpit.com/about</a>:</b></p> \n<p>Cockpit was born out of the need of building a simple dynamic site. Sure, Wordpress, Joomla, Drupal and all the other full-stack content management systems are possible solutions for that task ... but let's be honest, often they are just too bloated and too time consuming to setup, maintain and too complex implementing custom functionality.</p>\n<p>Cockpits goal is to be <b>simple, but yet powerful</b> and designed in that way that you can spend less time trying to squeeze your site into a theme or template.</p>\n<p>Don't waste time on setting up a cms. You need a backup? Just zip your project folder or better, combine it with versioning systems like Git.</p>\n<p>Let Cockpit manage the content, implement and reuse the content the way you want. Everything is more stress free, <b>everything is just more simple.</b></p>\n<p><b>Note: Aftering the installation, when first logging into Cockpit, the default username and password is 'admin'.</b></p>";
+appName = "Thinkup";
 
-_ref = [0, 1, 2, 3, 4, 5, 6, 7], NOT_INSTALLED = _ref[0], INSTALLED = _ref[1], WORKING = _ref[2], FAILED = _ref[3], WRONG_PASSWORD = _ref[4], INSTALL = _ref[5], REINSTALL = _ref[6], UNINSTALL = _ref[7];
+github = "https://rest.kd.io/bvallelunga/Thinkup.kdapp/master";
+
+logo = "" + github + "/resources/logo.png";
+
+launchURL = "https://" + domain + "/thinkup/";
+
+installChecker = "/home/" + user + "/Web/" + app;
+
+logger = "/tmp/_" + appName + "Installer.out/" + session;
+
+description = "   \n<p>\n  <div class=\"center bold\">There are things Facebook & Twitter don't tell you.</div>\n</p>\n<p>\n  ThinkUp is a free, installable web application that gives you insights into your\n  activity on social networks, including Twitter, Facebook, Foursquare, and Google+. \n  Find out more at <a href=\"http://thinkup.com\">http://thinkup.com</a>.\n</p>\n<p>\n  <img src=\"" + github + "/resources/description.png\"/>\n</p>";
 /* BLOCK STARTS: /home/bvallelunga/Applications/Thinkup.kdapp/controllers/kiteHelper.coffee */
 var KiteHelper,
   __hasProp = {}.hasOwnProperty,
@@ -110,10 +110,10 @@ KiteHelper = (function(_super) {
   };
 
   KiteHelper.prototype.run = function(options, callback) {
-    if (options.timeout == null) {
-      options.timeout = 10 * 60 * 1000;
-    }
     return this.getKite().then(function(kite) {
+      if (options.timeout == null) {
+        options.timeout = 10 * 60 * 1000;
+      }
       kite.options.timeout = options.timeout;
       return kite.exec(options).then(function(result) {
         if (callback) {
@@ -178,13 +178,16 @@ ThinkupInstallerController = (function(_super) {
     return this.kiteHelper.getKite().then((function(_this) {
       return function(kite) {
         return kite.fsExists({
-          path: existingFile
+          path: installChecker
         }).then(function(state) {
           if (!state) {
             return _this.announce("" + appName + " not installed", NOT_INSTALLED);
           } else {
             return _this.announce("" + appName + " is installed", INSTALLED);
           }
+        })["catch"](function(err) {
+          _this.announce("Failed to see if " + appName + " is installed", FAILED);
+          throw err;
         });
       };
     })(this));
@@ -209,7 +212,7 @@ ThinkupInstallerController = (function(_super) {
     this.announce("" + (this.namify(name)) + "ing " + appName + "...", false, 0);
     this.watcher.watch();
     return this.kiteHelper.run({
-      command: "curl -sL " + github + "/scripts/" + name + ".sh | bash -s " + user + " " + outPath,
+      command: "curl -sL " + github + "/scripts/" + name + ".sh | bash -s " + user + " " + logger,
       password: password
     }, (function(_this) {
       return function(err, res) {
@@ -229,12 +232,12 @@ ThinkupInstallerController = (function(_super) {
 
   ThinkupInstallerController.prototype.configureWatcher = function() {
     return this.kiteHelper.run({
-      command: "mkdir -p " + outPath
+      command: "mkdir -p " + logger
     }, (function(_this) {
       return function(err) {
         if (!err) {
           _this.watcher = new FSWatcher({
-            path: outPath
+            path: logger
           });
           return _this.watcher.fileAdded = function(change) {
             var name, percentage, status, _ref;
@@ -285,15 +288,15 @@ ThinkupMainView = (function(_super) {
       tagName: 'div',
       cssClass: 'container'
     }));
-    this.container.addSubView(this.header = new KDHeaderView({
+    this.container.addSubView(new KDHeaderView({
       title: "" + appName + " Installer",
       type: "big"
     }));
-    this.container.addSubView(this.logo = new KDCustomHTMLView({
+    this.container.addSubView(new KDCustomHTMLView({
       tagName: 'img',
       cssClass: 'logo',
       attributes: {
-        src: png
+        src: logo
       }
     }));
     this.container.addSubView(this.progress = new KDProgressBarView({
@@ -338,8 +341,8 @@ ThinkupMainView = (function(_super) {
         };
       })(this)
     }));
-    this.container.addSubView(this.content = new KDCustomHTMLView({
-      cssClass: "help",
+    this.container.addSubView(new KDCustomHTMLView({
+      cssClass: "description",
       partial: description
     }));
     return KD.utils.defer((function(_this) {
