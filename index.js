@@ -1,4 +1,4 @@
-/* Compiled by kdc on Sat Jul 26 2014 01:53:34 GMT+0000 (UTC) */
+/* Compiled by kdc on Sat Jul 26 2014 02:01:49 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -287,10 +287,6 @@ ThinkupMainView = (function(_super) {
     this.addSubView(this.container = new KDCustomHTMLView({
       tagName: 'div',
       cssClass: 'container'
-    }));
-    this.container.addSubView(new KDHeaderView({
-      title: "" + appName + " Installer",
-      type: "big"
     }));
     this.container.addSubView(new KDCustomHTMLView({
       tagName: 'img',

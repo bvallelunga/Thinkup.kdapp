@@ -9,10 +9,6 @@ class ThinkupMainView extends KDView
     @addSubView @container = new KDCustomHTMLView
       tagName       : 'div'
       cssClass      : 'container'
-    
-    @container.addSubView new KDHeaderView
-      title         : "#{appName} Installer"
-      type          : "big"
 
     @container.addSubView new KDCustomHTMLView
       tagName       : 'img'
