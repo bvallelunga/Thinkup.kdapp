@@ -1,4 +1,4 @@
-/* Compiled by kdc on Sat Jul 26 2014 02:01:49 GMT+0000 (UTC) */
+/* Compiled by kdc on Sat Jul 26 2014 02:08:59 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -373,16 +373,22 @@ ThinkupMainView = (function(_super) {
         return this.statusUpdate(message, percentage);
       case WRONG_PASSWORD:
         this.Installer.state = this.Installer.lastState;
-        return this.presentModal(this.Installer.bound("command"), this.Installer.lastCommand);
+        return this.presentModal(this.Installer.bound("command"), this.Installer.lastCommand, true);
       default:
         return this.updateProgress(message, percentage);
     }
   };
 
-  ThinkupMainView.prototype.presentModal = function(cb, command) {
+  ThinkupMainView.prototype.presentModal = function(cb, command, error) {
+    var title;
     if (!this.modal) {
+      if (!error) {
+        title = "Please enter your Koding password";
+      } else {
+        title = "Incorrect password, please try again";
+      }
       return this.modal = new KDModalViewWithForms({
-        title: "Please enter your Koding password",
+        title: title,
         overlay: true,
         width: 550,
         height: "auto",

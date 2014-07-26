@@ -80,15 +80,20 @@ class ThinkupMainView extends KDView
         @statusUpdate message, percentage
       when WRONG_PASSWORD
         @Installer.state = @Installer.lastState
-        @presentModal @Installer.bound("command"), @Installer.lastCommand
+        @presentModal @Installer.bound("command"), @Installer.lastCommand, yes
       else
         @updateProgress message, percentage
           
   
-  presentModal: (cb, command)->
+  presentModal: (cb, command, error)->
     unless @modal
+      unless error
+        title = "Please enter your Koding password"
+      else
+        title = "Incorrect password, please try again"
+    
       @modal = new KDModalViewWithForms
-       title     : "Please enter your Koding password"
+       title     : title
        overlay   : yes
        width     : 550
        height    : "auto"
