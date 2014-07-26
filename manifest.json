@@ -26,6 +26,7 @@
       "./resources/style.css"
     ],
     "less": [
+      "./resources/mixins.less",
       "./resources/style.less"
     ]
   },
