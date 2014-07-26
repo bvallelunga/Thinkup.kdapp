@@ -8,7 +8,7 @@
   "path": "~/Applications/Thinkup",
   "homepage": "bvallelunga.kd.io/thinkup",
   "repository": "git://github.com/bvallelunga/thinkup.kdapp.git",
-  "description": "Thinkup : a Koding application created with the blank template.",
+  "description": "Thinkup : There are things Facebook & Twitter don't tell you.",
   "category": "web-app",
   "source": {
     "blocks": {
