@@ -20,6 +20,7 @@ rm /tmp/thinkup.zip
 touch $OUT/"60-Installing Thinkup"
 mv thinkup /home/$USER/Web/thinkup
 chmod -R 777 /home/$USER/Web/thinkup
+chown -r www-data /home/$USER/Web/thinkup
 
 touch $OUT/"80-Installing Curl PHP Library"
 apt-get install -q -y curl libcurl3 libcurl3-dev php5-curl
