@@ -1,14 +1,4 @@
 class ThinkupInstallerController extends KDController
-  app                     = "thinkup"
-  appName                 = "Thinkup"
-  user                    = KD.nick()
-  github                  = "https://rest.kd.io/bvallelunga/#{appName}.kdapp/master"
-  existingFile            = "/home/#{user}/Web/#{app}"
-  session                 = (Math.random() + 1).toString(36).substring 7
-  outPath                 = "/tmp/_#{appName}Installer.out/#{session}"
-  [NOT_INSTALLED, INSTALLED, WORKING,
-  FAILED, WRONG_PASSWORD, INSTALL,
-  REINSTALL, UNINSTALL]   = [0..7]
   
   constructor:(options = {}, data)->
 
@@ -22,46 +12,54 @@ class ThinkupInstallerController extends KDController
     @registerSingleton "thinkupInstallerController", this, yes
   
   announce:(message, state, percentage)->
-    @updateState state if state
+    @updateState state if state?
     @emit "status-update", message, percentage 
   
   init: ->
     @kiteHelper.getKite().then (kite)=>
       kite.fsExists(path: existingFile).then (state)=>
         unless state
-          @announce "#{appName} Not Installed", NOT_INSTALLED
+          @announce "#{appName} not installed", NOT_INSTALLED
         else
-          @announce "#{appName} Is Installed", INSTALLED
+          @announce "#{appName} is installed", INSTALLED
 
   command: (command, password)->
     switch command
       when INSTALL then name = "install"
       when REINSTALL then name = "reinstall"
       when UNINSTALL then name = "uninstall"
-      else return throw "Command: #{command} not registered."
+      else return throw "Command not registered."
     
-    @announce "#{@namify name}ing #{appName}..."
+    @lastCommand = command
+    @announce "#{@namify name}ing #{appName}...", false, 0
     @watcher.watch()
     
     @kiteHelper.run
-      command: "wget -O - #{github}/scripts/#{name}.sh | bash #{user} #{outPath}"
+      command: "curl -sL #{github}/scripts/#{name}.sh | bash -s #{user} #{outPath}"
       password: password
     , (err, res)=>
       @watcher.stopWatching()
-    
-      if err or not state
-        @announce "Failed to #{name}, please try again", FAILED
-      else if state.exitStatus != 0 and state.stderr.indexOf("incorrect password attempt") != -1 
-        @announce "Your password was incorrect, please try again", WRONG_PASSWORD
-      else
+      
+      if not err and res.exitStatus is 0
         @init()
+      else
+        if err.details.message is "Permissiond denied. Wrong password"
+          @announce "Your password was incorrect, please try again", WRONG_PASSWORD
+        else
+          @announce "Failed to #{name}, please try again", FAILED
 
   configureWatcher: ->
-    @watcher = new FSWatcher path : outPath
-    @watcher.fileAdded = (change)=>
-      {name} = change.file
-      [percentage, status] = change.file.name.split '-'
-      @announce status, WORKING, percentage
+    @kiteHelper.run 
+      command : "mkdir -p #{outPath}"
+    , (err)=>
+      unless err
+        @watcher = new FSWatcher path : outPath
+        @watcher.fileAdded = (change)=>
+          {name} = change.file
+          [percentage, status] = name.split '-'
+          @announce status, WORKING, percentage
+      else
+        return throw err
       
   
   updateState: (state)->

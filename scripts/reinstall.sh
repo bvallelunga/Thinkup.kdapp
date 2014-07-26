@@ -24,5 +24,10 @@ chmod -R 777 /home/bvallelunga/Web/thinkup/data/
 touch $OUT/"80-Installing Curl PHP Library"
 apt-get install -q -y curl libcurl3 libcurl3-dev php5-curl
 
+touch $OUT/"90-Restarting MYSQL"
+rm /etc/init/mysql.override;
+service mysql restart
+
 touch $OUT/"100-Restarting Apache"
+rm /etc/init/apache.override; 
 service apache2 restart

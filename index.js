@@ -1,9 +1,35 @@
-/* Compiled by kdc on Fri Jul 25 2014 22:01:17 GMT+0000 (UTC) */
+/* Compiled by kdc on Sat Jul 26 2014 00:31:59 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
   var appView = window.appPreview
 }
+/* BLOCK STARTS: /home/bvallelunga/Applications/Thinkup.kdapp/config.coffee */
+var FAILED, INSTALL, INSTALLED, NOT_INSTALLED, REINSTALL, UNINSTALL, WORKING, WRONG_PASSWORD, app, appName, description, domain, existingFile, github, launchURL, outPath, png, session, user, _ref;
+
+app = "thinkup";
+
+appName = "Thinkup";
+
+user = KD.nick();
+
+domain = "" + user + ".kd.io";
+
+github = "https://rest.kd.io/bvallelunga/Thinkup.kdapp/master";
+
+png = "" + github + "/resources/logo.png";
+
+launchURL = "https://" + domain + "/thinkup/install/";
+
+existingFile = "/home/" + user + "/Web/" + app;
+
+session = (Math.random() + 1).toString(36).substring(7);
+
+outPath = "/tmp/_" + appName + "Installer.out/" + session;
+
+description = "   \n<p><br><b>From <a href=\"https://getcockpit.com/about\">https://getcockpit.com/about</a>:</b></p> \n<p>Cockpit was born out of the need of building a simple dynamic site. Sure, Wordpress, Joomla, Drupal and all the other full-stack content management systems are possible solutions for that task ... but let's be honest, often they are just too bloated and too time consuming to setup, maintain and too complex implementing custom functionality.</p>\n<p>Cockpits goal is to be <b>simple, but yet powerful</b> and designed in that way that you can spend less time trying to squeeze your site into a theme or template.</p>\n<p>Don't waste time on setting up a cms. You need a backup? Just zip your project folder or better, combine it with versioning systems like Git.</p>\n<p>Let Cockpit manage the content, implement and reuse the content the way you want. Everything is more stress free, <b>everything is just more simple.</b></p>\n<p><b>Note: Aftering the installation, when first logging into Cockpit, the default username and password is 'admin'.</b></p>";
+
+_ref = [0, 1, 2, 3, 4, 5, 6, 7], NOT_INSTALLED = _ref[0], INSTALLED = _ref[1], WORKING = _ref[2], FAILED = _ref[3], WRONG_PASSWORD = _ref[4], INSTALL = _ref[5], REINSTALL = _ref[6], UNINSTALL = _ref[7];
 /* BLOCK STARTS: /home/bvallelunga/Applications/Thinkup.kdapp/controllers/kiteHelper.coffee */
 var KiteHelper,
   __hasProp = {}.hasOwnProperty,
@@ -124,25 +150,7 @@ var ThinkupInstallerController,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 ThinkupInstallerController = (function(_super) {
-  var FAILED, INSTALL, INSTALLED, NOT_INSTALLED, REINSTALL, UNINSTALL, WORKING, WRONG_PASSWORD, app, appName, existingFile, github, outPath, session, user, _ref;
-
   __extends(ThinkupInstallerController, _super);
-
-  app = "thinkup";
-
-  appName = "Thinkup";
-
-  user = KD.nick();
-
-  github = "https://rest.kd.io/bvallelunga/" + appName + ".kdapp/master";
-
-  existingFile = "/home/" + user + "/Web/" + app;
-
-  session = (Math.random() + 1).toString(36).substring(7);
-
-  outPath = "/tmp/_" + appName + "Installer.out/" + session;
-
-  _ref = [0, 1, 2, 3, 4, 5, 6, 7], NOT_INSTALLED = _ref[0], INSTALLED = _ref[1], WORKING = _ref[2], FAILED = _ref[3], WRONG_PASSWORD = _ref[4], INSTALL = _ref[5], REINSTALL = _ref[6], UNINSTALL = _ref[7];
 
   function ThinkupInstallerController(options, data) {
     var thinkupInstallerController;
@@ -160,7 +168,7 @@ ThinkupInstallerController = (function(_super) {
   }
 
   ThinkupInstallerController.prototype.announce = function(message, state, percentage) {
-    if (state) {
+    if (state != null) {
       this.updateState(state);
     }
     return this.emit("status-update", message, percentage);
@@ -173,9 +181,9 @@ ThinkupInstallerController = (function(_super) {
           path: existingFile
         }).then(function(state) {
           if (!state) {
-            return _this.announce("" + appName + " Not Installed", NOT_INSTALLED);
+            return _this.announce("" + appName + " not installed", NOT_INSTALLED);
           } else {
-            return _this.announce("" + appName + " Is Installed", INSTALLED);
+            return _this.announce("" + appName + " is installed", INSTALLED);
           }
         });
       };
@@ -195,39 +203,50 @@ ThinkupInstallerController = (function(_super) {
         name = "uninstall";
         break;
       default:
-        throw "Command: " + command + " not registered.";
+        throw "Command not registered.";
     }
-    this.announce("" + (this.namify(name)) + "ing " + appName + "...");
+    this.lastCommand = command;
+    this.announce("" + (this.namify(name)) + "ing " + appName + "...", false, 0);
     this.watcher.watch();
     return this.kiteHelper.run({
-      command: "wget -O - " + github + "/scripts/" + name + ".sh | bash " + user + " " + outPath,
+      command: "curl -sL " + github + "/scripts/" + name + ".sh | bash -s " + user + " " + outPath,
       password: password
     }, (function(_this) {
       return function(err, res) {
         _this.watcher.stopWatching();
-        if (err || !state) {
-          return _this.announce("Failed to " + name + ", please try again", FAILED);
-        } else if (state.exitStatus !== 0 && state.stderr.indexOf("incorrect password attempt") !== -1) {
-          return _this.announce("Your password was incorrect, please try again", WRONG_PASSWORD);
-        } else {
+        if (!err && res.exitStatus === 0) {
           return _this.init();
+        } else {
+          if (err.details.message === "Permissiond denied. Wrong password") {
+            return _this.announce("Your password was incorrect, please try again", WRONG_PASSWORD);
+          } else {
+            return _this.announce("Failed to " + name + ", please try again", FAILED);
+          }
         }
       };
     })(this));
   };
 
   ThinkupInstallerController.prototype.configureWatcher = function() {
-    this.watcher = new FSWatcher({
-      path: outPath
-    });
-    return this.watcher.fileAdded = (function(_this) {
-      return function(change) {
-        var name, percentage, status, _ref1;
-        name = change.file.name;
-        _ref1 = change.file.name.split('-'), percentage = _ref1[0], status = _ref1[1];
-        return _this.announce(status, WORKING, percentage);
+    return this.kiteHelper.run({
+      command: "mkdir -p " + outPath
+    }, (function(_this) {
+      return function(err) {
+        if (!err) {
+          _this.watcher = new FSWatcher({
+            path: outPath
+          });
+          return _this.watcher.fileAdded = function(change) {
+            var name, percentage, status, _ref;
+            name = change.file.name;
+            _ref = name.split('-'), percentage = _ref[0], status = _ref[1];
+            return _this.announce(status, WORKING, percentage);
+          };
+        } else {
+          throw err;
+        }
       };
-    })(this);
+    })(this));
   };
 
   ThinkupInstallerController.prototype.updateState = function(state) {
@@ -250,23 +269,7 @@ var ThinkupMainView,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 ThinkupMainView = (function(_super) {
-  var FAILED, INSTALL, INSTALLED, NOT_INSTALLED, REINSTALL, UNINSTALL, WORKING, WRONG_PASSWORD, appName, description, domain, github, launchURL, png, _ref;
-
   __extends(ThinkupMainView, _super);
-
-  appName = "Thinkup";
-
-  domain = "" + (KD.nick()) + ".kd.io";
-
-  github = "https://rest.kd.io/bvallelunga/Thinkup.kdapp/master";
-
-  png = "" + github + "/resources/logo.png";
-
-  launchURL = "https://" + domain + "/thinkup";
-
-  description = "   \n<p><br><b>From <a href=\"https://getcockpit.com/about\">https://getcockpit.com/about</a>:</b></p> \n<p>Cockpit was born out of the need of building a simple dynamic site. Sure, Wordpress, Joomla, Drupal and all the other full-stack content management systems are possible solutions for that task ... but let's be honest, often they are just too bloated and too time consuming to setup, maintain and too complex implementing custom functionality.</p>\n<p>Cockpits goal is to be <b>simple, but yet powerful</b> and designed in that way that you can spend less time trying to squeeze your site into a theme or template.</p>\n<p>Don't waste time on setting up a cms. You need a backup? Just zip your project folder or better, combine it with versioning systems like Git.</p>\n<p>Let Cockpit manage the content, implement and reuse the content the way you want. Everything is more stress free, <b>everything is just more simple.</b></p>\n<p><b>Note: Aftering the installation, when first logging into Cockpit, the default username and password is 'admin'.</b></p>";
-
-  _ref = [0, 1, 2, 3, 4, 5, 6, 7], NOT_INSTALLED = _ref[0], INSTALLED = _ref[1], WORKING = _ref[2], FAILED = _ref[3], WRONG_PASSWORD = _ref[4], INSTALL = _ref[5], REINSTALL = _ref[6], UNINSTALL = _ref[7];
 
   function ThinkupMainView(options, data) {
     if (options == null) {
@@ -313,7 +316,7 @@ ThinkupMainView = (function(_super) {
       cssClass: 'button green solid hidden',
       callback: (function(_this) {
         return function() {
-          return _this.presentModal(Installer.bound("command"), INSTALL);
+          return _this.presentModal(_this.Installer.bound("command"), INSTALL);
         };
       })(this)
     }));
@@ -348,14 +351,13 @@ ThinkupMainView = (function(_super) {
   };
 
   ThinkupMainView.prototype.statusUpdate = function(message, percentage) {
-    var element, _i, _len, _ref1;
-    console.log(message, percentage, this.Installer.state);
+    var element, _i, _len, _ref;
     if (percentage == null) {
       percentage = 100;
     }
-    _ref1 = [this.installButton, this.reinstallButton, this.uninstallButton, this.link];
-    for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-      element = _ref1[_i];
+    _ref = [this.installButton, this.reinstallButton, this.uninstallButton, this.link];
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      element = _ref[_i];
       element.hide();
     }
     switch (this.Installer.state) {
@@ -371,7 +373,8 @@ ThinkupMainView = (function(_super) {
         this.Installer.state = this.Installer.lastState;
         return this.statusUpdate(message, percentage);
       case WRONG_PASSWORD:
-        return this.presentModal(this.Installer.bound("command"), this.Installer.lastState);
+        this.Installer.state = this.Installer.lastState;
+        return this.presentModal(this.Installer.bound("command"), this.Installer.lastCommand);
       default:
         return this.updateProgress(message, percentage);
     }
