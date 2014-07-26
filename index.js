@@ -1,6 +1,9 @@
-/* Compiled by kdc on Sat Jul 26 2014 02:10:20 GMT+0000 (UTC) */
+/* Compiled by kdc on Sat Jul 26 2014 02:16:51 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
+if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
+  var appView = window.appPreview
+}
 /* BLOCK STARTS: /home/bvallelunga/Applications/Thinkup.kdapp/config.coffee */
 var FAILED, INSTALL, INSTALLED, NOT_INSTALLED, REINSTALL, UNINSTALL, WORKING, WRONG_PASSWORD, app, appName, description, domain, github, installChecker, launchURL, logger, logo, session, user, _ref;
 
@@ -28,7 +31,7 @@ logger = "/tmp/_" + appName + "Installer.out/" + session;
 
 description = "   \n<p>\n  <div class=\"center bold\">There are things Facebook & Twitter don't tell you.</div>\n</p>\n<p>\n  ThinkUp is a free, installable web application that gives you insights into your\n  activity on social networks, including Twitter, Facebook, Foursquare, and Google+. \n  Find out more at <a href=\"http://thinkup.com\">http://thinkup.com</a>.\n</p>\n<p>\n  <img src=\"" + github + "/resources/description.png\"/>\n</p>";
 /* BLOCK STARTS: /home/bvallelunga/Applications/Thinkup.kdapp/controllers/kiteHelper.coffee */
-var KiteHelper, _ref,
+var KiteHelper,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -36,37 +39,37 @@ KiteHelper = (function(_super) {
   __extends(KiteHelper, _super);
 
   function KiteHelper() {
-    _ref = KiteHelper.__super__.constructor.apply(this, arguments);
-    return _ref;
+    return KiteHelper.__super__.constructor.apply(this, arguments);
   }
 
   KiteHelper.prototype.vmIsStarting = false;
 
   KiteHelper.prototype.getReady = function() {
-    var _this = this;
-    return new Promise(function(resolve, reject) {
-      var JVM;
-      JVM = KD.remote.api.JVM;
-      return JVM.fetchVmsByContext(function(err, vms) {
-        var alias, kiteController, vm, _i, _len;
-        if (err) {
-          console.warn(err);
-        }
-        if (!vms) {
-          return;
-        }
-        _this._vms = vms;
-        _this._kites = {};
-        kiteController = KD.getSingleton('kiteController');
-        for (_i = 0, _len = vms.length; _i < _len; _i++) {
-          vm = vms[_i];
-          alias = vm.hostnameAlias;
-          _this._kites[alias] = kiteController.getKite("os-" + vm.region, alias, 'os');
-        }
-        _this.emit('ready');
-        return resolve();
-      });
-    });
+    return new Promise((function(_this) {
+      return function(resolve, reject) {
+        var JVM;
+        JVM = KD.remote.api.JVM;
+        return JVM.fetchVmsByContext(function(err, vms) {
+          var alias, kiteController, vm, _i, _len;
+          if (err) {
+            console.warn(err);
+          }
+          if (!vms) {
+            return;
+          }
+          _this._vms = vms;
+          _this._kites = {};
+          kiteController = KD.getSingleton('kiteController');
+          for (_i = 0, _len = vms.length; _i < _len; _i++) {
+            vm = vms[_i];
+            alias = vm.hostnameAlias;
+            _this._kites[alias] = kiteController.getKite("os-" + vm.region, alias, 'os');
+          }
+          _this.emit('ready');
+          return resolve();
+        });
+      };
+    })(this));
   };
 
   KiteHelper.prototype.getVm = function() {
@@ -75,34 +78,35 @@ KiteHelper = (function(_super) {
   };
 
   KiteHelper.prototype.getKite = function() {
-    var _this = this;
-    return new Promise(function(resolve, reject) {
-      return _this.getReady().then(function() {
-        var kite, vm, vmController;
-        vm = _this.getVm().hostnameAlias;
-        vmController = KD.singletons.vmController;
-        if (!(kite = _this._kites[vm])) {
-          return reject({
-            message: "No such kite for " + vm
-          });
-        }
-        return vmController.info(vm, function(err, vmn, info) {
-          var timeout;
-          if (!_this.vmIsStarting && info.state === "STOPPED") {
-            _this.vmIsStarting = true;
-            timeout = 10 * 60 * 1000;
-            kite.options.timeout = timeout;
-            return kite.vmOn().then(function() {
-              return resolve(kite);
-            }).timeout(timeout)["catch"](function(err) {
-              return reject(err);
+    return new Promise((function(_this) {
+      return function(resolve, reject) {
+        return _this.getReady().then(function() {
+          var kite, vm, vmController;
+          vm = _this.getVm().hostnameAlias;
+          vmController = KD.singletons.vmController;
+          if (!(kite = _this._kites[vm])) {
+            return reject({
+              message: "No such kite for " + vm
             });
-          } else {
-            return resolve(kite);
           }
+          return vmController.info(vm, function(err, vmn, info) {
+            var timeout;
+            if (!_this.vmIsStarting && info.state === "STOPPED") {
+              _this.vmIsStarting = true;
+              timeout = 10 * 60 * 1000;
+              kite.options.timeout = timeout;
+              return kite.vmOn().then(function() {
+                return resolve(kite);
+              }).timeout(timeout)["catch"](function(err) {
+                return reject(err);
+              });
+            } else {
+              return resolve(kite);
+            }
+          });
         });
-      });
-    });
+      };
+    })(this));
   };
 
   KiteHelper.prototype.run = function(options, callback) {
@@ -171,10 +175,11 @@ ThinkupInstallerController = (function(_super) {
   };
 
   ThinkupInstallerController.prototype.init = function() {
-    var _this = this;
-    return this.kiteHelper.getKite().then(function(kite) {
-      return kite.fsExists({
-        path: installChecker.then(function(state) {
+    return this.kiteHelper.getKite().then((function(_this) {
+      return function(kite) {
+        return kite.fsExists({
+          path: installChecker
+        }).then(function(state) {
           if (!state) {
             return _this.announce("" + appName + " not installed", NOT_INSTALLED);
           } else {
@@ -183,14 +188,13 @@ ThinkupInstallerController = (function(_super) {
         })["catch"](function(err) {
           _this.announce("Failed to see if " + appName + " is installed", FAILED);
           throw err;
-        })
-      });
-    });
+        });
+      };
+    })(this));
   };
 
   ThinkupInstallerController.prototype.command = function(command, password) {
-    var name,
-      _this = this;
+    var name;
     switch (command) {
       case INSTALL:
         name = "install";
@@ -210,39 +214,42 @@ ThinkupInstallerController = (function(_super) {
     return this.kiteHelper.run({
       command: "curl -sL " + github + "/scripts/" + name + ".sh | bash -s " + user + " " + logger,
       password: password
-    }, function(err, res) {
-      _this.watcher.stopWatching();
-      if (!err && res.exitStatus === 0) {
-        return _this.init();
-      } else {
-        if (err.details.message === "Permissiond denied. Wrong password") {
-          return _this.announce("Your password was incorrect, please try again", WRONG_PASSWORD);
+    }, (function(_this) {
+      return function(err, res) {
+        _this.watcher.stopWatching();
+        if (!err && res.exitStatus === 0) {
+          return _this.init();
         } else {
-          return _this.announce("Failed to " + name + ", please try again", FAILED);
+          if (err.details.message === "Permissiond denied. Wrong password") {
+            return _this.announce("Your password was incorrect, please try again", WRONG_PASSWORD);
+          } else {
+            return _this.announce("Failed to " + name + ", please try again", FAILED);
+          }
         }
-      }
-    });
+      };
+    })(this));
   };
 
   ThinkupInstallerController.prototype.configureWatcher = function() {
-    var _this = this;
     return this.kiteHelper.run({
       command: "mkdir -p " + logger
-    }, function(err) {
-      if (!err) {
-        _this.watcher = new FSWatcher({
-          path: logger
-        });
-        return _this.watcher.fileAdded = function(change) {
-          var name, percentage, status, _ref;
-          name = change.file.name;
-          _ref = name.split('-'), percentage = _ref[0], status = _ref[1];
-          return _this.announce(status, WORKING, percentage);
-        };
-      } else {
-        throw err;
-      }
-    });
+    }, (function(_this) {
+      return function(err) {
+        if (!err) {
+          _this.watcher = new FSWatcher({
+            path: logger
+          });
+          return _this.watcher.fileAdded = function(change) {
+            var name, percentage, status, _ref;
+            name = change.file.name;
+            _ref = name.split('-'), percentage = _ref[0], status = _ref[1];
+            return _this.announce(status, WORKING, percentage);
+          };
+        } else {
+          throw err;
+        }
+      };
+    })(this));
   };
 
   ThinkupInstallerController.prototype.updateState = function(state) {
@@ -277,7 +284,6 @@ ThinkupMainView = (function(_super) {
   }
 
   ThinkupMainView.prototype.viewAppended = function() {
-    var _this = this;
     this.addSubView(this.container = new KDCustomHTMLView({
       tagName: 'div',
       cssClass: 'container'
@@ -307,32 +313,40 @@ ThinkupMainView = (function(_super) {
     this.buttonContainer.addSubView(this.installButton = new KDButtonView({
       title: "Install " + appName,
       cssClass: 'button green solid hidden',
-      callback: function() {
-        return _this.presentModal(_this.Installer.bound("command"), INSTALL);
-      }
+      callback: (function(_this) {
+        return function() {
+          return _this.presentModal(_this.Installer.bound("command"), INSTALL);
+        };
+      })(this)
     }));
     this.buttonContainer.addSubView(this.reinstallButton = new KDButtonView({
       title: "Reinstall",
       cssClass: 'button solid hidden',
-      callback: function() {
-        return _this.presentModal(_this.Installer.bound("command"), REINSTALL);
-      }
+      callback: (function(_this) {
+        return function() {
+          return _this.presentModal(_this.Installer.bound("command"), REINSTALL);
+        };
+      })(this)
     }));
     this.buttonContainer.addSubView(this.uninstallButton = new KDButtonView({
       title: "Uninstall",
       cssClass: 'button red solid hidden',
-      callback: function() {
-        return _this.presentModal(_this.Installer.bound("command"), UNINSTALL);
-      }
+      callback: (function(_this) {
+        return function() {
+          return _this.presentModal(_this.Installer.bound("command"), UNINSTALL);
+        };
+      })(this)
     }));
     this.container.addSubView(new KDCustomHTMLView({
       cssClass: "description",
       partial: description
     }));
-    return KD.utils.defer(function() {
-      _this.Installer.on("status-update", _this.bound("statusUpdate"));
-      return _this.Installer.init();
-    });
+    return KD.utils.defer((function(_this) {
+      return function() {
+        _this.Installer.on("status-update", _this.bound("statusUpdate"));
+        return _this.Installer.init();
+      };
+    })(this));
   };
 
   ThinkupMainView.prototype.statusUpdate = function(message, percentage) {
@@ -366,8 +380,7 @@ ThinkupMainView = (function(_super) {
   };
 
   ThinkupMainView.prototype.presentModal = function(cb, command, error) {
-    var title,
-      _this = this;
+    var title;
     if (!this.modal) {
       if (!error) {
         title = "Please enter your Koding password";
@@ -382,11 +395,13 @@ ThinkupMainView = (function(_super) {
         cssClass: "new-kdmodal",
         tabs: {
           navigable: true,
-          callback: function(form) {
-            cb(command, form.password);
-            _this.modal.destroy();
-            return delete _this.modal;
-          },
+          callback: (function(_this) {
+            return function(form) {
+              cb(command, form.password);
+              _this.modal.destroy();
+              return delete _this.modal;
+            };
+          })(this),
           forms: {
             "Sudo Password": {
               buttons: {
