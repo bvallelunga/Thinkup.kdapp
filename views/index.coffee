@@ -23,12 +23,21 @@ class ThinkupMainView extends KDView
     @container.addSubView @link = new KDCustomHTMLView
       cssClass : 'hidden running-link'
       
-    @link.setSession = ->
-      @updatePartial """
-        Click here to launch #{appName}: 
-        <a target='_blank' href='#{launchURL}'>#{launchURL}</a>
-      """
-      @show()        
+    @link.setSession = =>
+      @Installer.isConfigured()
+        .then (configured)=>
+          url = if configured then launchURL else configureURL
+          
+          @link.updatePartial """
+            Click here to launch #{appName}: 
+            <a target='_blank' href='#{url}'>#{url}</a>
+          """
+          @link.show()
+        .catch (error)=>
+          console.error error
+          @link.updatePartial "Failed to check if #{appName} is configured."
+          @link.show()
+          
     
     @container.addSubView @buttonContainer = new KDCustomHTMLView
       tagName       : 'div'

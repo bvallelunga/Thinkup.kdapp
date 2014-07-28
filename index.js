@@ -1,11 +1,11 @@
-/* Compiled by kdc on Sat Jul 26 2014 02:16:51 GMT+0000 (UTC) */
+/* Compiled by kdc on Mon Jul 28 2014 19:56:48 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
   var appView = window.appPreview
 }
 /* BLOCK STARTS: /home/bvallelunga/Applications/Thinkup.kdapp/config.coffee */
-var FAILED, INSTALL, INSTALLED, NOT_INSTALLED, REINSTALL, UNINSTALL, WORKING, WRONG_PASSWORD, app, appName, description, domain, github, installChecker, launchURL, logger, logo, session, user, _ref;
+var FAILED, INSTALL, INSTALLED, NOT_INSTALLED, REINSTALL, UNINSTALL, WORKING, WRONG_PASSWORD, app, appName, configureURL, configuredChecker, description, domain, github, installChecker, launchURL, logger, logo, session, user, _ref;
 
 _ref = [0, 1, 2, 3, 4, 5, 6, 7], NOT_INSTALLED = _ref[0], INSTALLED = _ref[1], WORKING = _ref[2], FAILED = _ref[3], WRONG_PASSWORD = _ref[4], INSTALL = _ref[5], REINSTALL = _ref[6], UNINSTALL = _ref[7];
 
@@ -23,13 +23,17 @@ github = "https://rest.kd.io/bvallelunga/Thinkup.kdapp/master";
 
 logo = "" + github + "/resources/logo.png";
 
-launchURL = "https://" + domain + "/thinkup/";
+launchURL = "https://" + domain + "/" + app + "/";
+
+configureURL = "https://" + domain + "/" + app + "/install";
 
 installChecker = "/home/" + user + "/Web/" + app;
 
+configuredChecker = "/home/" + user + "/Web/" + app + "/config.inc.php";
+
 logger = "/tmp/_" + appName + "Installer.out/" + session;
 
-description = "   \n<p>\n  <div class=\"center bold\">There are things Facebook & Twitter don't tell you.</div>\n</p>\n<p>\n  ThinkUp is a free, installable web application that gives you insights into your\n  activity on social networks, including Twitter, Facebook, Foursquare, and Google+. \n  Find out more at <a href=\"http://thinkup.com\">http://thinkup.com</a>.\n</p>\n<p>\n  <img src=\"" + github + "/resources/description.png\"/>\n</p>";
+description = "<p>\n  <div class=\"center bold\">There are things Facebook & Twitter don't tell you.</div>\n</p>\n<p>\n  ThinkUp is a free, installable web application that gives you insights into your\n  activity on social networks, including Twitter, Facebook, Foursquare, and Google+. \n  Find out more at <a href=\"http://thinkup.com\">http://thinkup.com</a>.\n</p>\n<p>\n  <img src=\"" + github + "/resources/description.png\"/>\n</p>";
 /* BLOCK STARTS: /home/bvallelunga/Applications/Thinkup.kdapp/controllers/kiteHelper.coffee */
 var KiteHelper,
   __hasProp = {}.hasOwnProperty,
@@ -263,6 +267,21 @@ ThinkupInstallerController = (function(_super) {
     })).join(' ');
   };
 
+  ThinkupInstallerController.prototype.isConfigured = function() {
+    return new Promise((function(_this) {
+      return function(resolve, reject) {
+        if (!configuredChecker) {
+          return resolve(true);
+        }
+        return _this.kiteHelper.getKite().then(function(kite) {
+          return kite.fsExists({
+            path: configuredChecker
+          }).then(resolve)["catch"](reject);
+        });
+      };
+    })(this));
+  };
+
   return ThinkupInstallerController;
 
 })(KDController);
@@ -302,10 +321,20 @@ ThinkupMainView = (function(_super) {
     this.container.addSubView(this.link = new KDCustomHTMLView({
       cssClass: 'hidden running-link'
     }));
-    this.link.setSession = function() {
-      this.updatePartial("Click here to launch " + appName + ": \n<a target='_blank' href='" + launchURL + "'>" + launchURL + "</a>");
-      return this.show();
-    };
+    this.link.setSession = (function(_this) {
+      return function() {
+        return _this.Installer.isConfigured().then(function(configured) {
+          var url;
+          url = configured ? launchURL : configureURL;
+          _this.link.updatePartial("Click here to launch " + appName + ": \n<a target='_blank' href='" + url + "'>" + url + "</a>");
+          return _this.link.show();
+        })["catch"](function(error) {
+          console.error(error);
+          _this.link.updatePartial("Failed to check if " + appName + " is configured.");
+          return _this.link.show();
+        });
+      };
+    })(this);
     this.container.addSubView(this.buttonContainer = new KDCustomHTMLView({
       tagName: 'div',
       cssClass: 'button-container'

@@ -7,14 +7,17 @@ domain                  = "#{user}.kd.io"
 session                 = (Math.random() + 1).toString(36).substring 7
 
 # Configure App Here
-app                     = "thinkup"
-appName                 = "Thinkup"
-github                  = "https://rest.kd.io/bvallelunga/Thinkup.kdapp/master"
-logo                    = "#{github}/resources/logo.png"
-launchURL               = "https://#{domain}/thinkup/"
-installChecker          = "/home/#{user}/Web/#{app}"
-logger                  = "/tmp/_#{appName}Installer.out/#{session}"
-description             = """   
+app                     = "thinkup"                                                 # App name used for variables
+appName                 = "Thinkup"                                                 # App name used for titles and statuses            
+github                  = "https://rest.kd.io/bvallelunga/Thinkup.kdapp/master"     # Git repository on the master branch
+logo                    = "#{github}/resources/logo.png"                            # The main logo centered at the top of the app
+launchURL               = "https://#{domain}/#{app}/"                               # The url used after the app is configured
+configureURL            = "https://#{domain}/#{app}/install"                        # The url used to configure app
+installChecker          = "/home/#{user}/Web/#{app}"                                # Path used to check if the app is instaled
+configuredChecker       = "/home/#{user}/Web/#{app}/config.inc.php"                 # Path used to check if app is configured (can be set to "false")
+logger                  = "/tmp/_#{appName}Installer.out/#{session}"                # Path used to log installer progress
+description             =                                                           # The main description centered under the progress bar
+"""
 <p>
   <div class="center bold">There are things Facebook & Twitter don't tell you.</div>
 </p>
@@ -27,3 +30,6 @@ description             = """
   <img src="#{github}/resources/description.png"/>
 </p>
 """
+  
+  
+# Addition Configuration Variables Here

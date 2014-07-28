@@ -71,3 +71,13 @@ class ThinkupInstallerController extends KDController
     
   namify: (name)->
     return (name.split(/\s+/).map (word) -> word[0].toUpperCase() + word[1..-1].toLowerCase()).join ' '
+
+  isConfigured: ->
+    new Promise (resolve, reject)=>
+      unless configuredChecker
+        return resolve yes
+      
+      @kiteHelper.getKite().then (kite)=>
+        kite.fsExists path: configuredChecker
+          .then resolve
+          .catch reject
