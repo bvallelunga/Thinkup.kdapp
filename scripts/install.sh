@@ -11,10 +11,7 @@ touch $OUT/"20-Installing Libraries"
 apt-get update
 apt-get -y install apache2 php5-mysql libapache2-mod-php5unzip
 apt-get -y install curl libcurl3 libcurl3-dev php5-curl php5-mcrypt php5-gd --fix-missing
-apt-get -y install sendmail unzip
-yes | sendmailconfig
-ln -s /usr/sbin/sendmail /usr/bin/sendmail
-service apache2 restart
+apt-get -y install unzip
 
 touch $OUT/"40-Downloading Thinkup"
 wget http://thinkup.com/download/ -O /tmp/thinkup.zip

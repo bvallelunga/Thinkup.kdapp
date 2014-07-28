@@ -9,4 +9,3 @@ mkdir -p $OUT
 # Start Coding Here...
 touch $OUT/"50-Removing Thinkup"
 rm -rf /home/$USER/Web/thinkup
-yes | mysqladmin -u root drop Thinkup
