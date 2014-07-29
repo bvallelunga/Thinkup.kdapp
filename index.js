@@ -1,4 +1,4 @@
-/* Compiled by kdc on Tue Jul 29 2014 18:42:15 GMT+0000 (UTC) */
+/* Compiled by kdc on Tue Jul 29 2014 22:52:48 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -214,7 +214,7 @@ ThinkupInstallerController = (function(_super) {
         throw "Command not registered.";
     }
     this.lastCommand = command;
-    this.announce("" + (this.namify(name)) + "ing " + appName + "...", false, 0);
+    this.announce("" + (this.namify(name)) + "ing " + appName + "...", null, 0);
     this.watcher.watch();
     return this.kiteHelper.run({
       command: "curl -sL " + github + "/scripts/" + name + ".sh | bash -s " + user + " " + logger,
@@ -448,6 +448,9 @@ ThinkupMainView = (function(_super) {
         this.reinstallButton.show();
         this.uninstallButton.show();
         this.link.setSession();
+        return this.updateProgress(message, percentage);
+      case WORKING:
+        this.Installer.state = this.Installer.lastState;
         return this.updateProgress(message, percentage);
       case FAILED:
         this.Installer.state = this.Installer.lastState;

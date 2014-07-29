@@ -36,7 +36,7 @@ class ThinkupInstallerController extends KDController
       else return throw "Command not registered."
     
     @lastCommand = command
-    @announce "#{@namify name}ing #{appName}...", false, 0
+    @announce "#{@namify name}ing #{appName}...", null, 0
     @watcher.watch()
     
     @kiteHelper.run
