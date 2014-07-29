@@ -37,7 +37,6 @@ class ThinkupMainView extends KDView
           console.error error
           @link.updatePartial "Failed to check if #{appName} is configured."
           @link.show()
-          
     
     @container.addSubView @buttonContainer = new KDCustomHTMLView
       tagName       : 'div'
@@ -47,19 +46,22 @@ class ThinkupMainView extends KDView
       title         : "Install #{appName}"
       cssClass      : 'button green solid hidden'
       callback      : =>
-        @presentModal @Installer.bound("command"), INSTALL
+        @passwordModal no, (password)=>
+          @emailModal (key)=>
+            @Installer.command INSTALL, password
+            @Installer.mandrillKey = key
       
     @buttonContainer.addSubView @reinstallButton = new KDButtonView
       title         : "Reinstall"
       cssClass      : 'button solid hidden'
       callback      : =>
-        @presentModal @Installer.bound("command"), REINSTALL
+        @passwordModal @Installer.bound("command"), REINSTALL
         
     @buttonContainer.addSubView @uninstallButton = new KDButtonView
       title         : "Uninstall"
       cssClass      : 'button red solid hidden'
       callback      : =>
-        @presentModal @Installer.bound("command"), UNINSTALL
+        @passwordModal @Installer.bound("command"), UNINSTALL
 
     @container.addSubView new KDCustomHTMLView
       cssClass : "description"
@@ -89,46 +91,105 @@ class ThinkupMainView extends KDView
         @statusUpdate message, percentage
       when WRONG_PASSWORD
         @Installer.state = @Installer.lastState
-        @presentModal @Installer.bound("command"), @Installer.lastCommand, yes
+        @passwordModal yes, (password)=>
+          @Installer.command @Installer.lastCommand, password
       else
         @updateProgress message, percentage
           
   
-  presentModal: (cb, command, error)->
+  passwordModal: (error, cb)->
     unless @modal
-      unless error
-        title = "Please enter your Koding password"
+      unless error?
+        title = "#{appName} needs sudo access to continue"
       else
         title = "Incorrect password, please try again"
     
       @modal = new KDModalViewWithForms
-       title     : title
-       overlay   : yes
-       width     : 550
-       height    : "auto"
-       cssClass  : "new-kdmodal"
-       tabs                    :
-         navigable             : yes
-         callback              : (form)=> 
-           cb command, form.password
-           @modal.destroy()
-           delete @modal
-         forms                 :
-           "Sudo Password"     :
-             buttons           :
-               Next            :
-                 title         : "Submit"
-                 style         : "modal-clean-green"
-                 type          : "submit"
-             fields            :
-               password        :
-                 type          : "password"
-                 placeholder   : "sudo password..."
-                 validate      :
-                   rules       :
-                     required  : yes
-                   messages    :
-                     required  : "password is required!"
+        title         : title
+        overlay       : yes
+        overlayClick  : no
+        width         : 550
+        height        : "auto"
+        cssClass      : "new-kdmodal"
+        cancel        : =>
+          @modal.destroy()
+          delete @modal
+          cb ""
+        tabs                    :
+          navigable             : yes
+          callback              : (form)=> 
+            @modal.destroy()
+            delete @modal
+            cb form.password
+          forms                 :
+            "Sudo Password"     :
+              buttons           :
+                Next            :
+                  title         : "Submit"
+                  style         : "modal-clean-green"
+                  type          : "submit"
+              fields            :
+                password        :
+                  type          : "password"
+                  placeholder   : "sudo password..."
+                  validate      :
+                    rules       :
+                      required  : yes
+                    messages    :
+                      required  : "password is required!"
+                     
+  emailModal: (cb)->
+    unless @modal
+      @modal = new KDModalViewWithForms
+        title    : "Please enter your Mandrill API key"
+        content  : """
+        <p>
+          To fully utilize #{appName}, the ability to send emails
+          is required. With Mandrill you can send emails straight from
+          your vm. Here is the quick installation process:
+        </p>
+        <p>
+          <ol>
+            <li>Create an account on <a target="_blank" href="//mandrill.com/signup">Mandrill</a></li>
+            <li>In the dashboard click, <a target="_blank" href="//mandrillapp.com/settings/">Get Api Keys</a></li>
+            <li>Create an API Key</li>
+            <li>Copy API Key and paste into the form below</li>
+          </ol>
+        </p>
+        """
+        overlay       : yes
+        overlayClick  : no
+        width         : 550
+        height        : "auto"
+        cssClass      : "new-kdmodal"
+        cancel        : =>
+          @modal.destroy()
+          delete @modal
+          cb ""
+        tabs                    :
+          navigable             : yes
+          callback              : (form)=>
+            @modal.destroy()
+            delete @modal
+            cb form.key 
+          forms                 :
+            "API Key"           :
+              buttons           :
+                Next            :
+                  title         : "Submit"
+                  style         : "modal-clean-green"
+                  type          : "submit"
+              fields            :
+                key             :
+                  type          : "text"
+                  placeholder   : "api key..."
+                  validate      :
+                    rules       :
+                      required  : yes
+                    messages    :
+                      required  : "api key is required!"
+      
+      @modal
   
   updateProgress: (status, percentage)->
     @progress.updateBar percentage, '%', status

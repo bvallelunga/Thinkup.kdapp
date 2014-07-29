@@ -1,4 +1,4 @@
-/* Compiled by kdc on Mon Jul 28 2014 21:55:53 GMT+0000 (UTC) */
+/* Compiled by kdc on Tue Jul 29 2014 02:07:27 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -235,7 +235,8 @@ ThinkupInstallerController = (function(_super) {
   };
 
   ThinkupInstallerController.prototype.configureWatcher = function() {
-    return this.kiteHelper.run({
+    var configWatcher;
+    this.kiteHelper.run({
       command: "mkdir -p " + logger
     }, (function(_this) {
       return function(err) {
@@ -251,6 +252,34 @@ ThinkupInstallerController = (function(_super) {
           };
         } else {
           throw err;
+        }
+      };
+    })(this));
+    configWatcher = new FSWatcher({
+      path: installChecker
+    });
+    configWatcher.fileAdded = (function(_this) {
+      return function(change) {
+        if (name === "config.inc.php") {
+          _this.configureEmail();
+          return configWatcher.stopWatching();
+        }
+      };
+    })(this);
+    return configWatcher.watch();
+  };
+
+  ThinkupInstallerController.prototype.configureEmail = function() {
+    var find, replace;
+    find = "\\$THINKUP_CFG\\['mandrill_api_key'\\] \\= ''";
+    replace = "\\$THINKUP_CFG['mandrill_api_key'] = '" + this.mandrillKey + "'";
+    return this.kiteHelper.run({
+      command: "sed -i  \"s/" + find + "/" + replace + "/g\" " + configuredChecker
+    }, (function(_this) {
+      return function(err) {
+        if (err) {
+          console.error(err);
+          return _this.announce("Failed to configure email client, please try again");
         }
       };
     })(this));
@@ -344,7 +373,12 @@ ThinkupMainView = (function(_super) {
       cssClass: 'button green solid hidden',
       callback: (function(_this) {
         return function() {
-          return _this.presentModal(_this.Installer.bound("command"), INSTALL);
+          return _this.passwordModal(false, function(password) {
+            return _this.emailModal(function(key) {
+              _this.Installer.command(INSTALL, password);
+              return _this.Installer.mandrillKey = key;
+            });
+          });
         };
       })(this)
     }));
@@ -353,7 +387,7 @@ ThinkupMainView = (function(_super) {
       cssClass: 'button solid hidden',
       callback: (function(_this) {
         return function() {
-          return _this.presentModal(_this.Installer.bound("command"), REINSTALL);
+          return _this.passwordModal(_this.Installer.bound("command"), REINSTALL);
         };
       })(this)
     }));
@@ -362,7 +396,7 @@ ThinkupMainView = (function(_super) {
       cssClass: 'button red solid hidden',
       callback: (function(_this) {
         return function() {
-          return _this.presentModal(_this.Installer.bound("command"), UNINSTALL);
+          return _this.passwordModal(_this.Installer.bound("command"), UNINSTALL);
         };
       })(this)
     }));
@@ -402,33 +436,45 @@ ThinkupMainView = (function(_super) {
         return this.statusUpdate(message, percentage);
       case WRONG_PASSWORD:
         this.Installer.state = this.Installer.lastState;
-        return this.presentModal(this.Installer.bound("command"), this.Installer.lastCommand, true);
+        return this.passwordModal(true, (function(_this) {
+          return function(password) {
+            return _this.Installer.command(_this.Installer.lastCommand, password);
+          };
+        })(this));
       default:
         return this.updateProgress(message, percentage);
     }
   };
 
-  ThinkupMainView.prototype.presentModal = function(cb, command, error) {
+  ThinkupMainView.prototype.passwordModal = function(error, cb) {
     var title;
     if (!this.modal) {
-      if (!error) {
-        title = "Please enter your Koding password";
+      if (error == null) {
+        title = "" + appName + " needs sudo access to continue";
       } else {
         title = "Incorrect password, please try again";
       }
       return this.modal = new KDModalViewWithForms({
         title: title,
         overlay: true,
+        overlayClick: false,
         width: 550,
         height: "auto",
         cssClass: "new-kdmodal",
+        cancel: (function(_this) {
+          return function() {
+            _this.modal.destroy();
+            delete _this.modal;
+            return cb("");
+          };
+        })(this),
         tabs: {
           navigable: true,
           callback: (function(_this) {
             return function(form) {
-              cb(command, form.password);
               _this.modal.destroy();
-              return delete _this.modal;
+              delete _this.modal;
+              return cb(form.password);
             };
           })(this),
           forms: {
@@ -458,6 +504,63 @@ ThinkupMainView = (function(_super) {
           }
         }
       });
+    }
+  };
+
+  ThinkupMainView.prototype.emailModal = function(cb) {
+    if (!this.modal) {
+      this.modal = new KDModalViewWithForms({
+        title: "Please enter your Mandrill API key",
+        content: "<p>\n  To fully utilize " + appName + ", the ability to send emails\n  is required. With Mandrill you can send emails straight from\n  your vm. Here is the quick installation process:\n</p>\n<p>\n  <ol>\n    <li>Create an account on <a target=\"_blank\" href=\"//mandrill.com/signup\">Mandrill</a></li>\n    <li>In the dashboard click, <a target=\"_blank\" href=\"//mandrillapp.com/settings/\">Get Api Keys</a></li>\n    <li>Create an API Key</li>\n    <li>Copy API Key and paste into the form below</li>\n  </ol>\n</p>",
+        overlay: true,
+        overlayClick: false,
+        width: 550,
+        height: "auto",
+        cssClass: "new-kdmodal",
+        cancel: (function(_this) {
+          return function() {
+            _this.modal.destroy();
+            delete _this.modal;
+            return cb("");
+          };
+        })(this),
+        tabs: {
+          navigable: true,
+          callback: (function(_this) {
+            return function(form) {
+              _this.modal.destroy();
+              delete _this.modal;
+              return cb(form.key);
+            };
+          })(this),
+          forms: {
+            "API Key": {
+              buttons: {
+                Next: {
+                  title: "Submit",
+                  style: "modal-clean-green",
+                  type: "submit"
+                }
+              },
+              fields: {
+                key: {
+                  type: "text",
+                  placeholder: "api key...",
+                  validate: {
+                    rules: {
+                      required: true
+                    },
+                    messages: {
+                      required: "api key is required!"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      });
+      return this.modal;
     }
   };
 

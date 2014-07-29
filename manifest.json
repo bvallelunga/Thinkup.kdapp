@@ -27,6 +27,7 @@
     ],
     "less": [
       "./resources/mixins.less",
+      "./resources/modal.less",
       "./resources/style.less"
     ]
   },

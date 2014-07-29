@@ -53,6 +53,7 @@ class ThinkupInstallerController extends KDController
           @announce "Failed to #{name}, please try again", FAILED
 
   configureWatcher: ->
+    # Watch for progress updates
     @kiteHelper.run 
       command : "mkdir -p #{logger}"
     , (err)=>
@@ -64,6 +65,27 @@ class ThinkupInstallerController extends KDController
           @announce status, WORKING, percentage
       else
         return throw err
+        
+    # Watch for when config file is created
+    configWatcher = new FSWatcher path : installChecker
+    configWatcher.fileAdded = (change)=>
+      if name is "config.inc.php"
+        @configureEmail()
+        configWatcher.stopWatching()
+    configWatcher.watch()
+        
+  configureEmail: ->
+    find = "\\$THINKUP_CFG\\['mandrill_api_key'\\] \\= ''"
+    replace = "\\$THINKUP_CFG['mandrill_api_key'] = '#{@mandrillKey}'"
+    
+    @kiteHelper.run 
+      command : """
+        sed -i  "s/#{find}/#{replace}/g" #{configuredChecker}
+      """
+    , (err)=>
+      if err
+        console.error err
+        @announce "Failed to configure email client, please try again"
   
   updateState: (state)->
     @lastState = @state
@@ -81,3 +103,4 @@ class ThinkupInstallerController extends KDController
         kite.fsExists path: configuredChecker
           .then resolve
           .catch reject
+            

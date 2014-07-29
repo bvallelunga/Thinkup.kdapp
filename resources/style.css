@@ -1,3 +1,14 @@
+.new-kdmodal p {
+  margin: 10px 0;
+}
+.new-kdmodal ol {
+  list-style-type: decimal;
+  padding-left: 40px;
+}
+.new-kdmodal ol li {
+  display: list-item;
+  text-align: -webkit-match-parent;
+}
 .Thinkup-installer {
   width: 100%;
   height: 100%%;
