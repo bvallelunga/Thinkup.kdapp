@@ -26,9 +26,15 @@ class ThinkupMainView extends KDView
     @link.setSession = =>
       @Installer.isConfigured()
         .then (configured)=>
-          url = if configured then launchURL else configureURL
+          unless configured 
+            url     = configureURL
+            message = "Please set the database to <strong>Thinkup</strong> when configuring the app.<br>"
+          else 
+            url     = launchURL
+            message = ""
           
           @link.updatePartial """
+            #{message}
             Click here to launch #{appName}: 
             <a target='_blank' href='#{url}'>#{url}</a>
           """
@@ -55,13 +61,15 @@ class ThinkupMainView extends KDView
       title         : "Reinstall"
       cssClass      : 'button solid hidden'
       callback      : =>
-        @passwordModal @Installer.bound("command"), REINSTALL
+        @passwordModal no, (password)=>
+          @Installer.command REINSTALL, password
         
     @buttonContainer.addSubView @uninstallButton = new KDButtonView
       title         : "Uninstall"
       cssClass      : 'button red solid hidden'
       callback      : =>
-        @passwordModal @Installer.bound("command"), UNINSTALL
+        @passwordModal no, (password)=>
+          @Installer.command UNINSTALL, password
 
     @container.addSubView new KDCustomHTMLView
       cssClass : "description"
@@ -99,7 +107,7 @@ class ThinkupMainView extends KDView
   
   passwordModal: (error, cb)->
     unless @modal
-      unless error?
+      unless error
         title = "#{appName} needs sudo access to continue"
       else
         title = "Incorrect password, please try again"

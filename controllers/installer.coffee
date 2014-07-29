@@ -23,6 +23,7 @@ class ThinkupInstallerController extends KDController
             @announce "#{appName} not installed", NOT_INSTALLED
           else
             @announce "#{appName} is installed", INSTALLED
+            @configureEmailWatcher()
         .catch (err)=>
             @announce "Failed to see if #{appName} is installed", FAILED
             throw err
@@ -53,12 +54,13 @@ class ThinkupInstallerController extends KDController
           @announce "Failed to #{name}, please try again", FAILED
 
   configureWatcher: ->
-    # Watch for progress updates
     @kiteHelper.run 
       command : "mkdir -p #{logger}"
     , (err)=>
       unless err
-        @watcher = new FSWatcher path : logger
+        @watcher = new FSWatcher
+          path : logger
+          recursive : no
         @watcher.fileAdded = (change)=>
           {name} = change.file
           [percentage, status] = name.split '-'
@@ -66,26 +68,32 @@ class ThinkupInstallerController extends KDController
       else
         return throw err
         
-    # Watch for when config file is created
-    configWatcher = new FSWatcher path : installChecker
-    configWatcher.fileAdded = (change)=>
-      if name is "config.inc.php"
-        @configureEmail()
-        configWatcher.stopWatching()
-    configWatcher.watch()
-        
   configureEmail: ->
     find = "\\$THINKUP_CFG\\['mandrill_api_key'\\] \\= ''"
     replace = "\\$THINKUP_CFG['mandrill_api_key'] = '#{@mandrillKey}'"
     
     @kiteHelper.run 
       command : """
-        sed -i  "s/#{find}/#{replace}/g" #{configuredChecker}
+        sed -i  "s/#{find}/#{replace}/g" #{configuredChecker};
+        mysql -u root -e 'USE Thinkup; UPDATE tu_owners SET is_activated=1;'
       """
     , (err)=>
       if err
         console.error err
         @announce "Failed to configure email client, please try again"
+  
+  configureEmailWatcher: ->
+    if @configWatcher
+      @configWatcher.stopWatching()
+
+    @configWatcher = new FSWatcher 
+      path      : installChecker
+      recursive : no
+    @configWatcher.fileAdded = (change)=>
+      if change.file.name is "config.inc.php"
+        @configureEmail()
+        @configWatcher.stopWatching()
+    @configWatcher.watch()
   
   updateState: (state)->
     @lastState = @state
