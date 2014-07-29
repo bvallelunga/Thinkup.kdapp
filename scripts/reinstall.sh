@@ -9,6 +9,7 @@ mkdir -p $OUT
 # Start Coding Here...
 touch $OUT/"10-Removing Thinkup"
 rm -rf /home/$USER/Web/thinkup
+yes | mysqladmin -u root drop Thinkup
 
 touch $OUT/"20-Updating Libraries"
 apt-get -y update
