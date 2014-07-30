@@ -72,10 +72,10 @@ class ThinkupInstallerController extends KDController
     find = "\\$THINKUP_CFG\\['mandrill_api_key'\\] \\= ''"
     replace = "\\$THINKUP_CFG['mandrill_api_key'] = '#{@mandrillKey}'"
     
-    @kiteHelper.run 
+    @kiteHelper.run
       command : """
         sed -i  "s/#{find}/#{replace}/g" #{configuredChecker};
-        mysql -u root -e 'USE Thinkup; UPDATE tu_owners SET is_activated=1;'
+        mysql -u root --password=#{@mysqlPassword} -e 'USE Thinkup; UPDATE tu_owners SET is_activated=1;'
       """
     , (err)=>
       if err
@@ -85,15 +85,20 @@ class ThinkupInstallerController extends KDController
   configureEmailWatcher: ->
     if @configWatcher
       @configWatcher.stopWatching()
-
+      delete @configWatcher
+    
     @configWatcher = new FSWatcher 
       path      : installChecker
       recursive : no
     @configWatcher.fileAdded = (change)=>
+      console.log change
       if change.file.name is "config.inc.php"
         @configureEmail()
         @configWatcher.stopWatching()
     @configWatcher.watch()
+    
+    window.watcher = @configWatcher
+    console.log @configWatcher
   
   updateState: (state)->
     @lastState = @state

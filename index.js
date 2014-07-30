@@ -1,4 +1,4 @@
-/* Compiled by kdc on Tue Jul 29 2014 22:52:48 GMT+0000 (UTC) */
+/* Compiled by kdc on Wed Jul 30 2014 00:51:29 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -27,11 +27,11 @@ launchURL = "https://" + domain + "/" + app + "/";
 
 configureURL = "https://" + domain + "/" + app + "/install";
 
-installChecker = "/home/" + user + "/Web/" + app;
+installChecker = "/home/" + user + "/Web/" + app + "/";
 
 configuredChecker = "/home/" + user + "/Web/" + app + "/config.inc.php";
 
-logger = "/tmp/_" + appName + "Installer.out/" + session;
+logger = "/tmp/_" + appName + "Installer.out/" + session + "/";
 
 description = "<p>\n  <div class=\"center bold\">There are things Facebook & Twitter don't tell you.</div>\n</p>\n<p>\n  ThinkUp is a free, installable web application that gives you insights into your\n  activity on social networks, including Twitter, Facebook, Foursquare, and Google+. \n  Find out more at <a href=\"http://thinkup.com\">http://thinkup.com</a>.\n</p>\n<p>\n  <img src=\"" + github + "/resources/description.png\"/>\n</p>";
 /* BLOCK STARTS: /home/bvallelunga/Applications/Thinkup.kdapp/controllers/kiteHelper.coffee */
@@ -263,7 +263,7 @@ ThinkupInstallerController = (function(_super) {
     find = "\\$THINKUP_CFG\\['mandrill_api_key'\\] \\= ''";
     replace = "\\$THINKUP_CFG['mandrill_api_key'] = '" + this.mandrillKey + "'";
     return this.kiteHelper.run({
-      command: "sed -i  \"s/" + find + "/" + replace + "/g\" " + configuredChecker + ";\nmysql -u root -e 'USE Thinkup; UPDATE tu_owners SET is_activated=1;'"
+      command: "sed -i  \"s/" + find + "/" + replace + "/g\" " + configuredChecker + ";\nmysql -u root --password=" + this.mysqlPassword + " -e 'USE Thinkup; UPDATE tu_owners SET is_activated=1;'"
     }, (function(_this) {
       return function(err) {
         if (err) {
@@ -277,6 +277,7 @@ ThinkupInstallerController = (function(_super) {
   ThinkupInstallerController.prototype.configureEmailWatcher = function() {
     if (this.configWatcher) {
       this.configWatcher.stopWatching();
+      delete this.configWatcher;
     }
     this.configWatcher = new FSWatcher({
       path: installChecker,
@@ -284,13 +285,16 @@ ThinkupInstallerController = (function(_super) {
     });
     this.configWatcher.fileAdded = (function(_this) {
       return function(change) {
+        console.log(change);
         if (change.file.name === "config.inc.php") {
           _this.configureEmail();
           return _this.configWatcher.stopWatching();
         }
       };
     })(this);
-    return this.configWatcher.watch();
+    this.configWatcher.watch();
+    window.watcher = this.configWatcher;
+    return console.log(this.configWatcher);
   };
 
   ThinkupInstallerController.prototype.updateState = function(state) {
@@ -387,11 +391,16 @@ ThinkupMainView = (function(_super) {
       cssClass: 'button green solid hidden',
       callback: (function(_this) {
         return function() {
-          return _this.passwordModal(false, function(password) {
-            return _this.emailModal(function(key) {
-              _this.Installer.command(INSTALL, password);
-              return _this.Installer.mandrillKey = key;
-            });
+          return _this.passwordModal(false, true, function(password, mysqlPassword) {
+            if (password != null) {
+              return _this.emailModal(function(key) {
+                if (key != null) {
+                  _this.Installer.command(INSTALL, password);
+                  _this.Installer.mandrillKey = key;
+                  return _this.Installer.mysqlPassword = mysqlPassword;
+                }
+              });
+            }
           });
         };
       })(this)
@@ -401,8 +410,10 @@ ThinkupMainView = (function(_super) {
       cssClass: 'button solid hidden',
       callback: (function(_this) {
         return function() {
-          return _this.passwordModal(false, function(password) {
-            return _this.Installer.command(REINSTALL, password);
+          return _this.passwordModal(false, false, function(password) {
+            if (password != null) {
+              return _this.Installer.command(REINSTALL, password);
+            }
           });
         };
       })(this)
@@ -412,8 +423,10 @@ ThinkupMainView = (function(_super) {
       cssClass: 'button red solid hidden',
       callback: (function(_this) {
         return function() {
-          return _this.passwordModal(false, function(password) {
-            return _this.Installer.command(UNINSTALL, password);
+          return _this.passwordModal(false, false, function(password) {
+            if (password != null) {
+              return _this.Installer.command(UNINSTALL, password);
+            }
           });
         };
       })(this)
@@ -457,9 +470,11 @@ ThinkupMainView = (function(_super) {
         return this.statusUpdate(message, percentage);
       case WRONG_PASSWORD:
         this.Installer.state = this.Installer.lastState;
-        return this.passwordModal(true, (function(_this) {
+        return this.passwordModal(true, false, (function(_this) {
           return function(password) {
-            return _this.Installer.command(_this.Installer.lastCommand, password);
+            if (password != null) {
+              return _this.Installer.command(_this.Installer.lastCommand, password);
+            }
           };
         })(this));
       default:
@@ -467,13 +482,41 @@ ThinkupMainView = (function(_super) {
     }
   };
 
-  ThinkupMainView.prototype.passwordModal = function(error, cb) {
-    var title;
+  ThinkupMainView.prototype.passwordModal = function(error, mysql, cb) {
+    var fields, title;
     if (!this.modal) {
       if (!error) {
-        title = "" + appName + " needs sudo access to continue";
+        title = "" + appName + " needs your Koding passwords";
       } else {
         title = "Incorrect password, please try again";
+      }
+      fields = {
+        password: {
+          type: "password",
+          placeholder: "sudo password...",
+          validate: {
+            rules: {
+              required: true
+            },
+            messages: {
+              required: "password is required!"
+            }
+          }
+        }
+      };
+      if (mysql) {
+        fields.mysqlPassword = {
+          type: "password",
+          placeholder: "mysql root password...",
+          validate: {
+            rules: {
+              required: true
+            },
+            messages: {
+              required: "password is required!"
+            }
+          }
+        };
       }
       return this.modal = new KDModalViewWithForms({
         title: title,
@@ -486,7 +529,7 @@ ThinkupMainView = (function(_super) {
           return function() {
             _this.modal.destroy();
             delete _this.modal;
-            return cb("");
+            return cb();
           };
         })(this),
         tabs: {
@@ -495,11 +538,11 @@ ThinkupMainView = (function(_super) {
             return function(form) {
               _this.modal.destroy();
               delete _this.modal;
-              return cb(form.password);
+              return cb(form.password, form.mysqlPassword);
             };
           })(this),
           forms: {
-            "Sudo Password": {
+            "Koding Passwords": {
               buttons: {
                 Next: {
                   title: "Submit",
@@ -507,20 +550,7 @@ ThinkupMainView = (function(_super) {
                   type: "submit"
                 }
               },
-              fields: {
-                password: {
-                  type: "password",
-                  placeholder: "sudo password...",
-                  validate: {
-                    rules: {
-                      required: true
-                    },
-                    messages: {
-                      required: "password is required!"
-                    }
-                  }
-                }
-              }
+              fields: fields
             }
           }
         }
@@ -542,7 +572,7 @@ ThinkupMainView = (function(_super) {
           return function() {
             _this.modal.destroy();
             delete _this.modal;
-            return cb("");
+            return cb();
           };
         })(this),
         tabs: {

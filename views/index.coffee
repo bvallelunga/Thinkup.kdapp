@@ -52,24 +52,29 @@ class ThinkupMainView extends KDView
       title         : "Install #{appName}"
       cssClass      : 'button green solid hidden'
       callback      : =>
-        @passwordModal no, (password)=>
-          @emailModal (key)=>
-            @Installer.command INSTALL, password
-            @Installer.mandrillKey = key
+        @passwordModal no, yes, (password, mysqlPassword)=>
+          if password?
+            @emailModal (key)=>
+              if key?
+                @Installer.command INSTALL, password
+                @Installer.mandrillKey = key
+                @Installer.mysqlPassword = mysqlPassword
       
     @buttonContainer.addSubView @reinstallButton = new KDButtonView
       title         : "Reinstall"
       cssClass      : 'button solid hidden'
       callback      : =>
-        @passwordModal no, (password)=>
-          @Installer.command REINSTALL, password
+        @passwordModal no, no, (password)=>
+          if password?
+            @Installer.command REINSTALL, password
         
     @buttonContainer.addSubView @uninstallButton = new KDButtonView
       title         : "Uninstall"
       cssClass      : 'button red solid hidden'
       callback      : =>
-        @passwordModal no, (password)=>
-          @Installer.command UNINSTALL, password
+        @passwordModal no, no, (password)=>
+          if password?
+            @Installer.command UNINSTALL, password
 
     @container.addSubView new KDCustomHTMLView
       cssClass : "description"
@@ -102,17 +107,39 @@ class ThinkupMainView extends KDView
         @statusUpdate message, percentage
       when WRONG_PASSWORD
         @Installer.state = @Installer.lastState
-        @passwordModal yes, (password)=>
-          @Installer.command @Installer.lastCommand, password
+        @passwordModal yes, no, (password)=>
+          if password?
+            @Installer.command @Installer.lastCommand, password
       else
         @updateProgress message, percentage
           
-  passwordModal: (error, cb)->
+  passwordModal: (error, mysql, cb)->
     unless @modal
       unless error
-        title = "#{appName} needs sudo access to continue"
+        title = "#{appName} needs your Koding passwords"
       else
         title = "Incorrect password, please try again"
+      
+      fields =
+        password        :
+          type          : "password"
+          placeholder   : "sudo password..."
+          validate      :
+            rules       :
+              required  : yes
+            messages    :
+              required  : "password is required!"
+        
+      if mysql
+        fields.mysqlPassword =
+          type                : "password"
+          placeholder         : "mysql root password..."
+          validate            :
+            rules             :
+              required        : yes
+            messages          :
+              required        : "password is required!"
+        
     
       @modal = new KDModalViewWithForms
         title         : title
@@ -124,30 +151,22 @@ class ThinkupMainView extends KDView
         cancel        : =>
           @modal.destroy()
           delete @modal
-          cb ""
+          cb()
         tabs                    :
           navigable             : yes
           callback              : (form)=> 
             @modal.destroy()
             delete @modal
-            cb form.password
+            cb form.password, form.mysqlPassword
           forms                 :
-            "Sudo Password"     :
+            "Koding Passwords"  :
               buttons           :
                 Next            :
                   title         : "Submit"
                   style         : "modal-clean-green"
                   type          : "submit"
-              fields            :
-                password        :
-                  type          : "password"
-                  placeholder   : "sudo password..."
-                  validate      :
-                    rules       :
-                      required  : yes
-                    messages    :
-                      required  : "password is required!"
-                     
+              fields            : fields
+
   emailModal: (cb)->
     unless @modal
       @modal = new KDModalViewWithForms
@@ -175,7 +194,7 @@ class ThinkupMainView extends KDView
         cancel        : =>
           @modal.destroy()
           delete @modal
-          cb ""
+          cb()
         tabs                    :
           navigable             : yes
           callback              : (form)=>
