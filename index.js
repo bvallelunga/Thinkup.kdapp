@@ -1,4 +1,4 @@
-/* Compiled by kdc on Wed Jul 30 2014 22:02:17 GMT+0000 (UTC) */
+/* Compiled by kdc on Wed Jul 30 2014 22:02:55 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -504,15 +504,7 @@ ThinkupMainView = (function(_super) {
       if (mysql) {
         fields.mysqlPassword = {
           type: "password",
-          placeholder: "mysql root password...",
-          validate: {
-            rules: {
-              required: false
-            },
-            messages: {
-              required: "password is required!"
-            }
-          }
+          placeholder: "mysql root password..."
         };
       }
       return this.modal = new KDModalViewWithForms({

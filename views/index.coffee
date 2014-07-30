@@ -135,12 +135,6 @@ class ThinkupMainView extends KDView
         fields.mysqlPassword =
           type                : "password"
           placeholder         : "mysql root password..."
-          validate            :
-            rules             :
-              required        : no
-            messages          :
-              required        : "password is required!"
-        
     
       @modal = new KDModalViewWithForms
         title         : title
