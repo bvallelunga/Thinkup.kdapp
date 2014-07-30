@@ -91,14 +91,10 @@ class ThinkupInstallerController extends KDController
       path      : installChecker
       recursive : no
     @configWatcher.fileAdded = (change)=>
-      console.log change
       if change.file.name is "config.inc.php"
-        @configureEmail()
         @configWatcher.stopWatching()
+        @configureEmail()
     @configWatcher.watch()
-    
-    window.watcher = @configWatcher
-    console.log @configWatcher
   
   updateState: (state)->
     @lastState = @state

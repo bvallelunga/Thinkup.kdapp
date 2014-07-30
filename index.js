@@ -1,4 +1,4 @@
-/* Compiled by kdc on Wed Jul 30 2014 19:45:04 GMT+0000 (UTC) */
+/* Compiled by kdc on Wed Jul 30 2014 20:00:49 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -285,16 +285,13 @@ ThinkupInstallerController = (function(_super) {
     });
     this.configWatcher.fileAdded = (function(_this) {
       return function(change) {
-        console.log(change);
         if (change.file.name === "config.inc.php") {
-          _this.configureEmail();
-          return _this.configWatcher.stopWatching();
+          _this.configWatcher.stopWatching();
+          return _this.configureEmail();
         }
       };
     })(this);
-    this.configWatcher.watch();
-    window.watcher = this.configWatcher;
-    return console.log(this.configWatcher);
+    return this.configWatcher.watch();
   };
 
   ThinkupInstallerController.prototype.updateState = function(state) {
