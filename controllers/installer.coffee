@@ -21,7 +21,7 @@ class ThinkupInstallerController extends KDController
         .then (state)=>
           unless state
             @announce "#{appName} not installed", NOT_INSTALLED
-            @configWatcher.stopWatching()
+            @configWatcher.stopWatching() if @configWatcher?
           else
             @announce "#{appName} is installed", INSTALLED
             @configureEmailWatcher()

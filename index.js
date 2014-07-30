@@ -1,4 +1,4 @@
-/* Compiled by kdc on Wed Jul 30 2014 22:06:47 GMT+0000 (UTC) */
+/* Compiled by kdc on Wed Jul 30 2014 22:10:41 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -186,7 +186,9 @@ ThinkupInstallerController = (function(_super) {
         }).then(function(state) {
           if (!state) {
             _this.announce("" + appName + " not installed", NOT_INSTALLED);
-            return _this.configWatcher.stopWatching();
+            if (_this.configWatcher != null) {
+              return _this.configWatcher.stopWatching();
+            }
           } else {
             _this.announce("" + appName + " is installed", INSTALLED);
             return _this.configureEmailWatcher();
