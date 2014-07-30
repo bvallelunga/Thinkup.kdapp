@@ -29,7 +29,7 @@ rm /tmp/thinkup.zip
 touch $OUT/"80-Installing Thinkup"
 mv thinkup /home/$USER/Web/thinkup
 chmod -R 777 /home/$USER/Web/thinkup
-chown -r $USER:$USER /home/$USER/Web/thinkup
+chown -R $USER:$USER /home/$USER/Web/thinkup
 
 touch $OUT/"90-Restarting MYSQL"
 rm /etc/init/mysql.override
