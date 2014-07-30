@@ -207,11 +207,6 @@ class ThinkupMainView extends KDView
                 key             :
                   type          : "text"
                   placeholder   : "api key..."
-                  validate      :
-                    rules       :
-                      required  : yes
-                    messages    :
-                      required  : "api key is required!"
       
       @modal
   

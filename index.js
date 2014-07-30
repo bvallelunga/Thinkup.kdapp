@@ -1,4 +1,4 @@
-/* Compiled by kdc on Wed Jul 30 2014 22:10:41 GMT+0000 (UTC) */
+/* Compiled by kdc on Wed Jul 30 2014 22:12:38 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -588,15 +588,7 @@ ThinkupMainView = (function(_super) {
               fields: {
                 key: {
                   type: "text",
-                  placeholder: "api key...",
-                  validate: {
-                    rules: {
-                      required: true
-                    },
-                    messages: {
-                      required: "api key is required!"
-                    }
-                  }
+                  placeholder: "api key..."
                 }
               }
             }
