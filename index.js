@@ -1,4 +1,4 @@
-/* Compiled by kdc on Wed Jul 30 2014 00:51:29 GMT+0000 (UTC) */
+/* Compiled by kdc on Wed Jul 30 2014 19:45:04 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -395,10 +395,10 @@ ThinkupMainView = (function(_super) {
             if (password != null) {
               return _this.emailModal(function(key) {
                 if (key != null) {
-                  _this.Installer.command(INSTALL, password);
                   _this.Installer.mandrillKey = key;
-                  return _this.Installer.mysqlPassword = mysqlPassword;
                 }
+                _this.Installer.command(INSTALL, password);
+                return _this.Installer.mysqlPassword = mysqlPassword;
               });
             }
           });

@@ -56,9 +56,10 @@ class ThinkupMainView extends KDView
           if password?
             @emailModal (key)=>
               if key?
-                @Installer.command INSTALL, password
                 @Installer.mandrillKey = key
-                @Installer.mysqlPassword = mysqlPassword
+              
+              @Installer.command INSTALL, password
+              @Installer.mysqlPassword = mysqlPassword
       
     @buttonContainer.addSubView @reinstallButton = new KDButtonView
       title         : "Reinstall"
