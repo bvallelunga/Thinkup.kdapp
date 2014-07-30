@@ -137,7 +137,7 @@ class ThinkupMainView extends KDView
           placeholder         : "mysql root password..."
           validate            :
             rules             :
-              required        : yes
+              required        : no
             messages          :
               required        : "password is required!"
         
