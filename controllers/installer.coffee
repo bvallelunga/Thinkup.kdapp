@@ -17,7 +17,7 @@ class ThinkupInstallerController extends KDController
   
   init: ->
     @kiteHelper.getKite().then (kite)=>
-      kite.fsExists path: installChecker
+      kite.fsExists(path: installChecker)
         .then (state)=>
           unless state
             @announce "#{appName} not installed", NOT_INSTALLED

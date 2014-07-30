@@ -1,4 +1,4 @@
-/* Compiled by kdc on Wed Jul 30 2014 21:51:20 GMT+0000 (UTC) */
+/* Compiled by kdc on Wed Jul 30 2014 21:55:35 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 /* BLOCK STARTS: /home/bvallelunga/Applications/Thinkup.kdapp/config.coffee */
@@ -178,17 +178,17 @@ ThinkupInstallerController = (function(_super) {
     var _this = this;
     return this.kiteHelper.getKite().then(function(kite) {
       return kite.fsExists({
-        path: installChecker.then(function(state) {
-          if (!state) {
-            return _this.announce("" + appName + " not installed", NOT_INSTALLED);
-          } else {
-            _this.announce("" + appName + " is installed", INSTALLED);
-            return _this.configureEmailWatcher();
-          }
-        })["catch"](function(err) {
-          _this.announce("Failed to see if " + appName + " is installed", FAILED);
-          throw err;
-        })
+        path: installChecker
+      }).then(function(state) {
+        if (!state) {
+          return _this.announce("" + appName + " not installed", NOT_INSTALLED);
+        } else {
+          _this.announce("" + appName + " is installed", INSTALLED);
+          return _this.configureEmailWatcher();
+        }
+      })["catch"](function(err) {
+        _this.announce("Failed to see if " + appName + " is installed", FAILED);
+        throw err;
       });
     });
   };
@@ -488,7 +488,7 @@ ThinkupMainView = (function(_super) {
           placeholder: "mysql root password...",
           validate: {
             rules: {
-              required: true
+              required: false
             },
             messages: {
               required: "password is required!"
