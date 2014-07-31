@@ -1,11 +1,11 @@
-/* Compiled by kdc on Thu Jul 31 2014 22:11:18 GMT+0000 (UTC) */
+/* Compiled by kdc on Thu Jul 31 2014 22:26:49 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
   var appView = window.appPreview
 }
 /* BLOCK STARTS: /home/bvallelunga/Applications/Thinkup.kdapp/config.coffee */
-var FAILED, INSTALL, INSTALLED, NOT_INSTALLED, REINSTALL, UNINSTALL, WORKING, WRONG_PASSWORD, app, appName, configureURL, configuredChecker, description, domain, github, installChecker, launchURL, logger, logo, session, user, _ref;
+var FAILED, INSTALL, INSTALLED, NOT_INSTALLED, REINSTALL, UNINSTALL, WORKING, WRONG_PASSWORD, app, appName, configureURL, configuredChecker, description, domain, github, installChecker, launchURL, logger, logo, scripts, session, user, _ref;
 
 _ref = [0, 1, 2, 3, 4, 5, 6, 7], NOT_INSTALLED = _ref[0], INSTALLED = _ref[1], WORKING = _ref[2], FAILED = _ref[3], WRONG_PASSWORD = _ref[4], INSTALL = _ref[5], REINSTALL = _ref[6], UNINSTALL = _ref[7];
 
@@ -33,7 +33,22 @@ configuredChecker = "/home/" + user + "/Web/" + app + "/config.inc.php";
 
 logger = "/tmp/_" + appName + "Installer.out/" + session + "/";
 
-description = "<p>\n  <div class=\"center bold\">There are things Facebook & Twitter don't tell you.</div>\n</p>\n<p>\n  ThinkUp is a free, installable web application that gives you insights into your\n  activity on social networks, including Twitter, Facebook, Foursquare, and Google+. \n  Find out more at <a href=\"http://thinkup.com\">http://thinkup.com</a>.\n</p>\n<p>\n  <img src=\"" + github + "/resources/description.png\"/>\n</p>";
+scripts = {
+  install: {
+    url: "" + github + "/scripts/install.sh",
+    sudo: true
+  },
+  reinstall: {
+    url: "" + github + "/scripts/reinstall.sh",
+    sudo: true
+  },
+  uninstal: {
+    url: "" + github + "/scripts/uninstall.sh",
+    sudo: false
+  }
+};
+
+description = "<p>\n  <div class=\"center bold\">There are things Facebook & Twitter don't tell you.</div>\n</p>\n<p>\n  ThinkUp is a free, installable web application that gives you insights into your\n  activity on social networks, including Twitter, Facebook, Foursquare, and Google+.\n  Find out more at <a href=\"http://thinkup.com\">http://thinkup.com</a>.\n</p>\n<p>\n  <img src=\"" + github + "/resources/description.png\"/>\n</p>";
 /* BLOCK STARTS: /home/bvallelunga/Applications/Thinkup.kdapp/controllers/kiteHelper.coffee */
 var KiteHelper,
   __hasProp = {}.hasOwnProperty,
@@ -220,15 +235,15 @@ ThinkupInstallerController = (function(_super) {
     this.announce("" + (this.namify(name)) + "ing " + appName + "...", null, 0);
     this.watcher.watch();
     return this.kiteHelper.run({
-      command: "curl -sL " + github + "/scripts/" + name + ".sh | bash -s " + user + " " + logger,
-      password: password
+      command: "curl -sL " + scripts[name].url + " | bash -s " + user + " " + logger,
+      password: scripts[name].sudo ? password : null
     }, (function(_this) {
       return function(err, res) {
         _this.watcher.stopWatching();
         if (!err && res.exitStatus === 0) {
           return _this.init();
         } else {
-          if (err.details.message === "Permissiond denied. Wrong password") {
+          if (err && err.details.message === "Permissiond denied. Wrong password") {
             return _this.announce("Your password was incorrect, please try again", WRONG_PASSWORD);
           } else {
             _this.announce("Failed to " + name + ", please try again", FAILED);

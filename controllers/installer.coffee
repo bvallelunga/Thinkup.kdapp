@@ -41,15 +41,15 @@ class ThinkupInstallerController extends KDController
     @watcher.watch()
 
     @kiteHelper.run
-      command: "curl -sL #{github}/scripts/#{name}.sh | bash -s #{user} #{logger}"
-      password: password
+      command: "curl -sL #{scripts[name].url} | bash -s #{user} #{logger}"
+      password: if scripts[name].sudo then password else null
     , (err, res)=>
       @watcher.stopWatching()
 
       if not err and res.exitStatus is 0
         @init()
       else
-        if err.details.message is "Permissiond denied. Wrong password"
+        if err and err.details.message is "Permissiond denied. Wrong password"
           @announce "Your password was incorrect, please try again", WRONG_PASSWORD
         else
           @announce "Failed to #{name}, please try again", FAILED
