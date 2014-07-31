@@ -8,10 +8,7 @@ mkdir -p $OUT
 
 # Start Coding Here...
 touch $OUT/"20-Updating Libraries"
-apt-get -y update
-
-touch $OUT/"25-Installing Apache & PHP Libraries"
-apt-get -y install apache2 php5-mysql libapache2-mod-php5unzip
+apt-get -q -y update
 
 touch $OUT/"30-Installing CURL Libraries"
 aapt-get install -q -y curl libcurl3 libcurl3-dev php5-curl
