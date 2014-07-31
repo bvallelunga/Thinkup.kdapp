@@ -20,11 +20,11 @@ touch $OUT/"40-Downloading Thinkup"
 wget http://thinkup.com/download/ -O /tmp/thinkup.zip
 
 touch $OUT/"60-Unzipping Thinkup"
-unzip -q /tmp/thinkup.zip
+unzip -q /tmp/thinkup.zip -d /tmp
 rm /tmp/thinkup.zip
 
 touch $OUT/"80-Installing Thinkup"
-mv thinkup /home/$USER/Web/thinkup
+mv /tmp/thinkup /home/$USER/Web/thinkup
 chmod -R 755 /home/$USER/Web/thinkup
 chown -R www-data /home/$USER/Web/thinkup
 
