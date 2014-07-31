@@ -11,7 +11,7 @@ touch $OUT/"20-Updating Libraries"
 apt-get -q -y update
 
 touch $OUT/"30-Installing CURL Libraries"
-aapt-get install -q -y curl libcurl3 libcurl3-dev php5-curl
+apt-get install -q -y curl libcurl3 libcurl3-dev php5-curl
 
 touch $OUT/"40-Downloading Thinkup"
 wget http://thinkup.com/download/ -O /tmp/thinkup.zip

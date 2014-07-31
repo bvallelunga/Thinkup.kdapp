@@ -11,7 +11,7 @@ touch $OUT/"10-Removing Thinkup"
 rm -rf /home/$USER/Web/thinkup
 
 touch $OUT/"20-Updating Libraries"
-apt-get -y update
+apt-get -q -y update
 
 touch $OUT/"30-Installing CURL Libraries"
 apt-get install -q -y curl libcurl3 libcurl3-dev php5-curl
