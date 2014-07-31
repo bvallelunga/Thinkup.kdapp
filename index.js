@@ -1,4 +1,4 @@
-/* Compiled by kdc on Thu Jul 31 2014 19:49:15 GMT+0000 (UTC) */
+/* Compiled by kdc on Thu Jul 31 2014 21:21:06 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -231,7 +231,8 @@ ThinkupInstallerController = (function(_super) {
           if (err.details.message === "Permissiond denied. Wrong password") {
             return _this.announce("Your password was incorrect, please try again", WRONG_PASSWORD);
           } else {
-            return _this.announce("Failed to " + name + ", please try again", FAILED);
+            _this.announce("Failed to " + name + ", please try again", FAILED);
+            throw err;
           }
         }
       };
@@ -270,8 +271,8 @@ ThinkupInstallerController = (function(_super) {
     }, (function(_this) {
       return function(err) {
         if (err) {
-          console.error(err);
-          return _this.announce("Failed to configure email client, please try again");
+          _this.announce("Failed to configure email client, please try again");
+          throw err;
         }
       };
     })(this));

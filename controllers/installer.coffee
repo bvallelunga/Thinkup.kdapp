@@ -1,5 +1,5 @@
 class ThinkupInstallerController extends KDController
-  
+
   constructor:(options = {}, data)->
 
     {thinkupInstallerController} = KD.singletons
@@ -10,11 +10,11 @@ class ThinkupInstallerController extends KDController
     @kiteHelper = new KiteHelper
     @kiteHelper.ready @bound "configureWatcher"
     @registerSingleton "thinkupInstallerController", this, yes
-  
+
   announce:(message, state, percentage)->
     @updateState state if state?
-    @emit "status-update", message, percentage 
-  
+    @emit "status-update", message, percentage
+
   init: ->
     @kiteHelper.getKite().then (kite)=>
       kite.fsExists(path: installChecker)
@@ -35,17 +35,17 @@ class ThinkupInstallerController extends KDController
       when REINSTALL then name = "reinstall"
       when UNINSTALL then name = "uninstall"
       else return throw "Command not registered."
-    
+
     @lastCommand = command
     @announce "#{@namify name}ing #{appName}...", null, 0
     @watcher.watch()
-    
+
     @kiteHelper.run
       command: "curl -sL #{github}/scripts/#{name}.sh | bash -s #{user} #{logger}"
       password: password
     , (err, res)=>
       @watcher.stopWatching()
-      
+
       if not err and res.exitStatus is 0
         @init()
       else
@@ -53,9 +53,10 @@ class ThinkupInstallerController extends KDController
           @announce "Your password was incorrect, please try again", WRONG_PASSWORD
         else
           @announce "Failed to #{name}, please try again", FAILED
+          throw err
 
   configureWatcher: ->
-    @kiteHelper.run 
+    @kiteHelper.run
       command : "mkdir -p #{logger}"
     , (err)=>
       unless err
@@ -67,12 +68,12 @@ class ThinkupInstallerController extends KDController
           [percentage, status] = name.split '-'
           @announce status, WORKING, percentage
       else
-        return throw err
-        
+        throw err
+
   configureEmail: ->
     find = "\\$THINKUP_CFG\\['mandrill_api_key'\\] \\= ''"
     replace = "\\$THINKUP_CFG['mandrill_api_key'] = '#{@mandrillKey}'"
-    
+
     @kiteHelper.run
       command : """
         sed -i  "s/#{find}/#{replace}/g" #{configuredChecker};
@@ -80,15 +81,15 @@ class ThinkupInstallerController extends KDController
       """
     , (err)=>
       if err
-        console.error err
         @announce "Failed to configure email client, please try again"
-  
+        throw err
+
   configureEmailWatcher: ->
     if @configWatcher
       @configWatcher.stopWatching()
       delete @configWatcher
-    
-    @configWatcher = new FSWatcher 
+
+    @configWatcher = new FSWatcher
       path      : installChecker
       recursive : no
     @configWatcher.fileAdded = (change)=>
@@ -96,11 +97,11 @@ class ThinkupInstallerController extends KDController
         @configWatcher.stopWatching()
         @configureEmail()
     @configWatcher.watch()
-  
+
   updateState: (state)->
     @lastState = @state
     @state = state
-    
+
   namify: (name)->
     return (name.split(/\s+/).map (word) -> word[0].toUpperCase() + word[1..-1].toLowerCase()).join ' '
 
@@ -108,9 +109,8 @@ class ThinkupInstallerController extends KDController
     new Promise (resolve, reject)=>
       unless configuredChecker
         return resolve yes
-      
+
       @kiteHelper.getKite().then (kite)=>
         kite.fsExists(path: configuredChecker)
           .then resolve
           .catch reject
-            
