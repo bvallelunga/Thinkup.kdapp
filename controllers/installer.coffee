@@ -112,5 +112,5 @@ class ThinkupInstallerController extends KDController
 
       @kiteHelper.getKite().then (kite)=>
         kite.fsExists(path: configuredChecker)
-          .then resolve
-          .catch reject
+          .then(resolve)
+          .catch(reject)
