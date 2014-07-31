@@ -17,8 +17,10 @@ touch $OUT/"25-Installing Apache & PHP Libraries"
 apt-get -y install apache2 php5-mysql libapache2-mod-php5unzip
 
 touch $OUT/"30-Installing CURL Libraries"
-apt-get -y install curl libcurl3 libcurl3-dev php5-curl php5-mcrypt php5-gd --fix-missing
+apt-get -y install curl libcurl3 libcurl3-dev php5-curl
 apt-get -y install unzip
+
+
 touch $OUT/"40-Downloading Thinkup"
 wget http://thinkup.com/download/ -O /tmp/thinkup.zip
 
