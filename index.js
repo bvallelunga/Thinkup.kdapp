@@ -1,4 +1,4 @@
-/* Compiled by kdc on Thu Jul 31 2014 22:26:49 GMT+0000 (UTC) */
+/* Compiled by kdc on Tue Aug 05 2014 20:58:29 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -42,9 +42,9 @@ scripts = {
     url: "" + github + "/scripts/reinstall.sh",
     sudo: true
   },
-  uninstal: {
+  uninstall: {
     url: "" + github + "/scripts/uninstall.sh",
-    sudo: false
+    sudo: true
   }
 };
 
@@ -240,6 +240,7 @@ ThinkupInstallerController = (function(_super) {
     }, (function(_this) {
       return function(err, res) {
         _this.watcher.stopWatching();
+        console.log(err, res);
         if (!err && res.exitStatus === 0) {
           return _this.init();
         } else {
@@ -405,8 +406,13 @@ ThinkupMainView = (function(_super) {
     this.buttonContainer.addSubView(this.installButton = new KDButtonView({
       title: "Install " + appName,
       cssClass: 'button green solid hidden',
+      loader: {
+        color: "#FFFFFF",
+        diameter: 12
+      },
       callback: (function(_this) {
         return function() {
+          _this.installButton.showLoader();
           return _this.passwordModal(false, true, function(password, mysqlPassword) {
             if (password != null) {
               return _this.emailModal(function(key) {
@@ -424,8 +430,13 @@ ThinkupMainView = (function(_super) {
     this.buttonContainer.addSubView(this.reinstallButton = new KDButtonView({
       title: "Reinstall",
       cssClass: 'button solid hidden',
+      loader: {
+        color: "#FFFFFF",
+        diameter: 12
+      },
       callback: (function(_this) {
         return function() {
+          _this.reinstallButton.showLoader();
           return _this.passwordModal(false, false, function(password) {
             if (password != null) {
               return _this.Installer.command(REINSTALL, password);
@@ -437,8 +448,13 @@ ThinkupMainView = (function(_super) {
     this.buttonContainer.addSubView(this.uninstallButton = new KDButtonView({
       title: "Uninstall",
       cssClass: 'button red solid hidden',
+      loader: {
+        color: "#FFFFFF",
+        diameter: 12
+      },
       callback: (function(_this) {
         return function() {
+          _this.uninstallButton.showLoader();
           return _this.passwordModal(false, false, function(password) {
             if (password != null) {
               return _this.Installer.command(UNINSTALL, password);
@@ -472,10 +488,13 @@ ThinkupMainView = (function(_super) {
     switch (this.Installer.state) {
       case NOT_INSTALLED:
         this.installButton.show();
+        this.reinstallButton.hideLoader();
+        this.uninstallButton.hideLoader();
         return this.updateProgress(message, percentage);
       case INSTALLED:
         this.reinstallButton.show();
         this.uninstallButton.show();
+        this.installButton.hideLoader();
         this.link.setSession();
         return this.updateProgress(message, percentage);
       case WORKING:

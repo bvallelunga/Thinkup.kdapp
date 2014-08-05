@@ -26,9 +26,9 @@
       "./resources/style.css"
     ],
     "less": [
-      "./resources/mixins.less",
-      "./resources/modal.less",
-      "./resources/style.less"
+      "./less/mixins.less",
+      "./less/modal.less",
+      "./less/style.less"
     ]
   },
   "options": {

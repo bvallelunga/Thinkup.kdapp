@@ -51,7 +51,11 @@ class ThinkupMainView extends KDView
     @buttonContainer.addSubView @installButton = new KDButtonView
       title         : "Install #{appName}"
       cssClass      : 'button green solid hidden'
+      loader        :
+          color     : "#FFFFFF"
+          diameter  : 12
       callback      : =>
+        @installButton.showLoader()
         @passwordModal no, yes, (password, mysqlPassword)=>
           if password?
             @emailModal (key)=>
@@ -64,7 +68,11 @@ class ThinkupMainView extends KDView
     @buttonContainer.addSubView @reinstallButton = new KDButtonView
       title         : "Reinstall"
       cssClass      : 'button solid hidden'
+      loader        :
+          color     : "#FFFFFF"
+          diameter  : 12
       callback      : =>
+        @reinstallButton.showLoader()
         @passwordModal no, no, (password)=>
           if password?
             @Installer.command REINSTALL, password
@@ -72,7 +80,11 @@ class ThinkupMainView extends KDView
     @buttonContainer.addSubView @uninstallButton = new KDButtonView
       title         : "Uninstall"
       cssClass      : 'button red solid hidden'
+      loader        :
+          color     : "#FFFFFF"
+          diameter  : 12
       callback      : =>
+        @uninstallButton.showLoader()
         @passwordModal no, no, (password)=>
           if password?
             @Installer.command UNINSTALL, password
@@ -94,10 +106,13 @@ class ThinkupMainView extends KDView
     switch @Installer.state
       when NOT_INSTALLED 
         @installButton.show()
+        @reinstallButton.hideLoader()
+        @uninstallButton.hideLoader()
         @updateProgress message, percentage
       when INSTALLED
         @reinstallButton.show()
         @uninstallButton.show()
+        @installButton.hideLoader()
         @link.setSession()
         @updateProgress message, percentage
       when WORKING

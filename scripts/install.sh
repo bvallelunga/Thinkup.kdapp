@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 # Setup
 USER=$1
 OUT=$2

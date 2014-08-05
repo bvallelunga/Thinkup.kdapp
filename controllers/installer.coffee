@@ -45,6 +45,7 @@ class ThinkupInstallerController extends KDController
       password: if scripts[name].sudo then password else null
     , (err, res)=>
       @watcher.stopWatching()
+      console.log err, res
 
       if not err and res.exitStatus is 0
         @init()
