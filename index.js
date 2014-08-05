@@ -1,4 +1,4 @@
-/* Compiled by kdc on Tue Aug 05 2014 20:58:29 GMT+0000 (UTC) */
+/* Compiled by kdc on Tue Aug 05 2014 21:00:03 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -240,7 +240,6 @@ ThinkupInstallerController = (function(_super) {
     }, (function(_this) {
       return function(err, res) {
         _this.watcher.stopWatching();
-        console.log(err, res);
         if (!err && res.exitStatus === 0) {
           return _this.init();
         } else {
