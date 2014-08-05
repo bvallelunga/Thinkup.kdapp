@@ -103,16 +103,19 @@ class ThinkupMainView extends KDView
       @installButton, @reinstallButton, @uninstallButton, @link
     ]
     
+    if percentage is 100
+      if @Installer.state in [NOT_INSTALLED, INSTALLED, FAILED] 
+        element.hideLoader() for element in [
+          @installButton, @reinstallButton, @uninstallButton
+        ]
+    
     switch @Installer.state
       when NOT_INSTALLED 
         @installButton.show()
-        @reinstallButton.hideLoader()
-        @uninstallButton.hideLoader()
         @updateProgress message, percentage
       when INSTALLED
         @reinstallButton.show()
         @uninstallButton.show()
-        @installButton.hideLoader()
         @link.setSession()
         @updateProgress message, percentage
       when WORKING

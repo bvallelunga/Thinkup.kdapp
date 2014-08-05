@@ -1,4 +1,4 @@
-/* Compiled by kdc on Tue Aug 05 2014 21:00:03 GMT+0000 (UTC) */
+/* Compiled by kdc on Tue Aug 05 2014 22:10:31 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -475,7 +475,7 @@ ThinkupMainView = (function(_super) {
   };
 
   ThinkupMainView.prototype.statusUpdate = function(message, percentage) {
-    var element, _i, _len, _ref;
+    var element, _i, _j, _len, _len1, _ref, _ref1, _ref2;
     if (percentage == null) {
       percentage = 100;
     }
@@ -484,16 +484,22 @@ ThinkupMainView = (function(_super) {
       element = _ref[_i];
       element.hide();
     }
+    if (percentage === 100) {
+      if ((_ref1 = this.Installer.state) === NOT_INSTALLED || _ref1 === INSTALLED || _ref1 === FAILED) {
+        _ref2 = [this.installButton, this.reinstallButton, this.uninstallButton];
+        for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
+          element = _ref2[_j];
+          element.hideLoader();
+        }
+      }
+    }
     switch (this.Installer.state) {
       case NOT_INSTALLED:
         this.installButton.show();
-        this.reinstallButton.hideLoader();
-        this.uninstallButton.hideLoader();
         return this.updateProgress(message, percentage);
       case INSTALLED:
         this.reinstallButton.show();
         this.uninstallButton.show();
-        this.installButton.hideLoader();
         this.link.setSession();
         return this.updateProgress(message, percentage);
       case WORKING:

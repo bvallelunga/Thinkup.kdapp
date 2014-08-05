@@ -74,8 +74,10 @@
   margin: 15px;
 }
 .Thinkup-installer .container .description {
-  font-size: 16px;
   color: #333;
+  font-size: 16px;
+  line-height: 1.7em;
+  color: #555;
 }
 .Thinkup-installer .container .description p {
   padding: 10px 0;
