@@ -1,4 +1,4 @@
-/* Compiled by kdc on Fri Aug 08 2014 00:31:00 GMT+0000 (UTC) */
+/* Compiled by kdc on Fri Aug 08 2014 00:42:31 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -240,7 +240,7 @@ ThinkupInstallerController = (function(_super) {
         if (!err && res.exitStatus === 0) {
           return _this.init();
         } else {
-          if (err && err.details.message === "Permissiond denied. Wrong password") {
+          if ((err != null) && err.details.message === "Permissiond denied. Wrong password") {
             return _this.announce("Your password was incorrect, please try again", WRONG_PASSWORD);
           } else {
             _this.announce("Failed to " + name + ", please try again", FAILED);

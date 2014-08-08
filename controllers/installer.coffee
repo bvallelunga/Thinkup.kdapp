@@ -48,7 +48,7 @@ class ThinkupInstallerController extends KDController
       if not err and res.exitStatus is 0
         @init()
       else
-        if err and err.details.message is "Permissiond denied. Wrong password"
+        if err? and err.details.message is "Permissiond denied. Wrong password"
           @announce "Your password was incorrect, please try again", WRONG_PASSWORD
         else
           @announce "Failed to #{name}, please try again", FAILED
