@@ -175,8 +175,8 @@ class ThinkupMainView extends KDView
           callback              : (form)=>
             @modal.destroy()
             delete @modal
-            cb form.password
             @Installer.mysqlPassword = form.mysqlPassword
+            cb form.password
           forms                 :
             "Koding Passwords"  :
               buttons           :

@@ -1,9 +1,6 @@
-/* Compiled by kdc on Fri Aug 08 2014 21:14:00 GMT+0000 (UTC) */
+/* Compiled by kdc on Fri Aug 08 2014 21:15:50 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
-if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
-  var appView = window.appPreview
-}
 /* BLOCK STARTS: /home/bvallelunga/Applications/Thinkup.kdapp/config.coffee */
 var FAILED, INSTALL, INSTALLED, NOT_INSTALLED, REINSTALL, UNINSTALL, WORKING, WRONG_PASSWORD, app, appName, configureURL, configuredChecker, description, domain, github, installChecker, launchURL, logger, logo, scripts, session, user, _ref;
 
@@ -50,7 +47,7 @@ scripts = {
 
 description = "<div class=\"center bold\">There are things Facebook & Twitter don't tell you.</div>\n</p>\n<p>\nThinkUp is a free, installable web application that gives you insights into your\nactivity on social networks, including Twitter, Facebook, Foursquare, and Google+.\nFind out more at <a href=\"http://thinkup.com\">http://thinkup.com</a>.\n</p>\n<p>\n<img src=\"" + github + "/resources/description.png\"/>\n</p>";
 /* BLOCK STARTS: /home/bvallelunga/Applications/Thinkup.kdapp/controllers/kiteHelper.coffee */
-var KiteHelper,
+var KiteHelper, _ref,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -58,37 +55,37 @@ KiteHelper = (function(_super) {
   __extends(KiteHelper, _super);
 
   function KiteHelper() {
-    return KiteHelper.__super__.constructor.apply(this, arguments);
+    _ref = KiteHelper.__super__.constructor.apply(this, arguments);
+    return _ref;
   }
 
   KiteHelper.prototype.vmIsStarting = false;
 
   KiteHelper.prototype.getReady = function() {
-    return new Promise((function(_this) {
-      return function(resolve, reject) {
-        var JVM;
-        JVM = KD.remote.api.JVM;
-        return JVM.fetchVmsByContext(function(err, vms) {
-          var alias, kiteController, vm, _i, _len;
-          if (err) {
-            console.warn(err);
-          }
-          if (!vms) {
-            return;
-          }
-          _this._vms = vms;
-          _this._kites = {};
-          kiteController = KD.getSingleton('kiteController');
-          for (_i = 0, _len = vms.length; _i < _len; _i++) {
-            vm = vms[_i];
-            alias = vm.hostnameAlias;
-            _this._kites[alias] = kiteController.getKite("os-" + vm.region, alias, 'os');
-          }
-          _this.emit('ready');
-          return resolve();
-        });
-      };
-    })(this));
+    var _this = this;
+    return new Promise(function(resolve, reject) {
+      var JVM;
+      JVM = KD.remote.api.JVM;
+      return JVM.fetchVmsByContext(function(err, vms) {
+        var alias, kiteController, vm, _i, _len;
+        if (err) {
+          console.warn(err);
+        }
+        if (!vms) {
+          return;
+        }
+        _this._vms = vms;
+        _this._kites = {};
+        kiteController = KD.getSingleton('kiteController');
+        for (_i = 0, _len = vms.length; _i < _len; _i++) {
+          vm = vms[_i];
+          alias = vm.hostnameAlias;
+          _this._kites[alias] = kiteController.getKite("os-" + vm.region, alias, 'os');
+        }
+        _this.emit('ready');
+        return resolve();
+      });
+    });
   };
 
   KiteHelper.prototype.getVm = function() {
@@ -97,35 +94,34 @@ KiteHelper = (function(_super) {
   };
 
   KiteHelper.prototype.getKite = function() {
-    return new Promise((function(_this) {
-      return function(resolve, reject) {
-        return _this.getReady().then(function() {
-          var kite, vm, vmController;
-          vm = _this.getVm().hostnameAlias;
-          vmController = KD.singletons.vmController;
-          if (!(kite = _this._kites[vm])) {
-            return reject({
-              message: "No such kite for " + vm
-            });
-          }
-          return vmController.info(vm, function(err, vmn, info) {
-            var timeout;
-            if (!_this.vmIsStarting && info.state === "STOPPED") {
-              _this.vmIsStarting = true;
-              timeout = 10 * 60 * 1000;
-              kite.options.timeout = timeout;
-              return kite.vmOn().then(function() {
-                return resolve(kite);
-              }).timeout(timeout)["catch"](function(err) {
-                return reject(err);
-              });
-            } else {
-              return resolve(kite);
-            }
+    var _this = this;
+    return new Promise(function(resolve, reject) {
+      return _this.getReady().then(function() {
+        var kite, vm, vmController;
+        vm = _this.getVm().hostnameAlias;
+        vmController = KD.singletons.vmController;
+        if (!(kite = _this._kites[vm])) {
+          return reject({
+            message: "No such kite for " + vm
           });
+        }
+        return vmController.info(vm, function(err, vmn, info) {
+          var timeout;
+          if (!_this.vmIsStarting && info.state === "STOPPED") {
+            _this.vmIsStarting = true;
+            timeout = 10 * 60 * 1000;
+            kite.options.timeout = timeout;
+            return kite.vmOn().then(function() {
+              return resolve(kite);
+            }).timeout(timeout)["catch"](function(err) {
+              return reject(err);
+            });
+          } else {
+            return resolve(kite);
+          }
         });
-      };
-    })(this));
+      });
+    });
   };
 
   KiteHelper.prototype.run = function(options, callback) {
@@ -194,26 +190,26 @@ ThinkupInstallerController = (function(_super) {
   };
 
   ThinkupInstallerController.prototype.init = function() {
-    return this.kiteHelper.getKite().then((function(_this) {
-      return function(kite) {
-        return kite.fsExists({
-          path: installChecker
-        }).then(function(state) {
-          if (!state) {
-            return _this.announce("" + appName + " not installed", NOT_INSTALLED);
-          } else {
-            return _this.announce("" + appName + " is installed", INSTALLED);
-          }
-        })["catch"](function(err) {
-          _this.announce("Failed to see if " + appName + " is installed", FAILED);
-          return console.error(err);
-        });
-      };
-    })(this));
+    var _this = this;
+    return this.kiteHelper.getKite().then(function(kite) {
+      return kite.fsExists({
+        path: installChecker
+      }).then(function(state) {
+        if (!state) {
+          return _this.announce("" + appName + " not installed", NOT_INSTALLED);
+        } else {
+          return _this.announce("" + appName + " is installed", INSTALLED);
+        }
+      })["catch"](function(err) {
+        _this.announce("Failed to see if " + appName + " is installed", FAILED);
+        return console.error(err);
+      });
+    });
   };
 
   ThinkupInstallerController.prototype.command = function(command, password, data) {
-    var name;
+    var name,
+      _this = this;
     switch (command) {
       case INSTALL:
         name = "install";
@@ -233,45 +229,42 @@ ThinkupInstallerController = (function(_super) {
     return this.kiteHelper.run({
       command: "curl -sL " + scripts[name].url + " | bash -s " + user + " " + logger + " " + this.mysqlPassword,
       password: scripts[name].sudo ? password : null
-    }, (function(_this) {
-      return function(err, res) {
-        var _ref;
-        _this.watcher.stopWatching();
-        if ((err != null) || res.exitStatus === !0) {
-          if (((_ref = err.details) != null ? _ref.message : void 0) === "Permissiond denied. Wrong password") {
-            return _this.announce("Your password was incorrect, please try again", WRONG_PASSWORD);
-          } else {
-            _this.announce("Failed to " + name + ", please try again", FAILED);
-            return console.error(err);
-          }
+    }, function(err, res) {
+      var _ref;
+      _this.watcher.stopWatching();
+      if ((err != null) || res.exitStatus === !0) {
+        if (((_ref = err.details) != null ? _ref.message : void 0) === "Permissiond denied. Wrong password") {
+          return _this.announce("Your password was incorrect, please try again", WRONG_PASSWORD);
         } else {
-          return _this.init();
+          _this.announce("Failed to " + name + ", please try again", FAILED);
+          return console.error(err);
         }
-      };
-    })(this));
+      } else {
+        return _this.init();
+      }
+    });
   };
 
   ThinkupInstallerController.prototype.configureWatcher = function() {
+    var _this = this;
     return this.kiteHelper.run({
       command: "mkdir -p " + logger
-    }, (function(_this) {
-      return function(err) {
-        if (!err) {
-          _this.watcher = new FSWatcher({
-            path: logger,
-            recursive: false
-          });
-          return _this.watcher.fileAdded = function(change) {
-            var name, percentage, status, _ref;
-            name = change.file.name;
-            _ref = name.split('-'), percentage = _ref[0], status = _ref[1];
-            return _this.announce(status, WORKING, percentage);
-          };
-        } else {
-          return console.error(err);
-        }
-      };
-    })(this));
+    }, function(err) {
+      if (!err) {
+        _this.watcher = new FSWatcher({
+          path: logger,
+          recursive: false
+        });
+        return _this.watcher.fileAdded = function(change) {
+          var name, percentage, status, _ref;
+          name = change.file.name;
+          _ref = name.split('-'), percentage = _ref[0], status = _ref[1];
+          return _this.announce(status, WORKING, percentage);
+        };
+      } else {
+        return console.error(err);
+      }
+    });
   };
 
   ThinkupInstallerController.prototype.updateState = function(state) {
@@ -286,18 +279,17 @@ ThinkupInstallerController = (function(_super) {
   };
 
   ThinkupInstallerController.prototype.isConfigured = function() {
-    return new Promise((function(_this) {
-      return function(resolve, reject) {
-        if (!configuredChecker) {
-          return resolve(true);
-        }
-        return _this.kiteHelper.getKite().then(function(kite) {
-          return kite.fsExists({
-            path: configuredChecker
-          }).then(resolve)["catch"](reject);
-        });
-      };
-    })(this));
+    var _this = this;
+    return new Promise(function(resolve, reject) {
+      if (!configuredChecker) {
+        return resolve(true);
+      }
+      return _this.kiteHelper.getKite().then(function(kite) {
+        return kite.fsExists({
+          path: configuredChecker
+        }).then(resolve)["catch"](reject);
+      });
+    });
   };
 
   return ThinkupInstallerController;
@@ -321,6 +313,7 @@ ThinkupMainView = (function(_super) {
   }
 
   ThinkupMainView.prototype.viewAppended = function() {
+    var _this = this;
     this.addSubView(this.container = new KDCustomHTMLView({
       tagName: 'div',
       cssClass: 'container'
@@ -339,26 +332,24 @@ ThinkupMainView = (function(_super) {
     this.container.addSubView(this.link = new KDCustomHTMLView({
       cssClass: 'hidden running-link'
     }));
-    this.link.setSession = (function(_this) {
-      return function() {
-        return _this.Installer.isConfigured().then(function(configured) {
-          var message, url;
-          if (!configured) {
-            url = configureURL;
-            message = "Please set the database to <strong>Thinkup</strong> when configuring the app.<br>";
-          } else {
-            url = launchURL;
-            message = "Thinkup has been configured for a demo using these credentials:\n<br>\n<strong>Username:</strong> demo@koding.com\n<br>\n<strong>Password:</strong> demo1234\n<br>";
-          }
-          _this.link.updatePartial("" + message + "\nClick here to launch " + appName + ":\n<a target='_blank' href='" + url + "'>" + url + "</a>");
-          return _this.link.show();
-        })["catch"](function(error) {
-          console.error(error);
-          _this.link.updatePartial("Failed to check if " + appName + " is configured.");
-          return _this.link.show();
-        });
-      };
-    })(this);
+    this.link.setSession = function() {
+      return _this.Installer.isConfigured().then(function(configured) {
+        var message, url;
+        if (!configured) {
+          url = configureURL;
+          message = "Please set the database to <strong>Thinkup</strong> when configuring the app.<br>";
+        } else {
+          url = launchURL;
+          message = "Thinkup has been configured for a demo using these credentials:\n<br>\n<strong>Username:</strong> demo@koding.com\n<br>\n<strong>Password:</strong> demo1234\n<br>";
+        }
+        _this.link.updatePartial("" + message + "\nClick here to launch " + appName + ":\n<a target='_blank' href='" + url + "'>" + url + "</a>");
+        return _this.link.show();
+      })["catch"](function(error) {
+        console.error(error);
+        _this.link.updatePartial("Failed to check if " + appName + " is configured.");
+        return _this.link.show();
+      });
+    };
     this.container.addSubView(this.buttonContainer = new KDCustomHTMLView({
       tagName: 'div',
       cssClass: 'button-container'
@@ -370,18 +361,16 @@ ThinkupMainView = (function(_super) {
         color: "#FFFFFF",
         diameter: 12
       },
-      callback: (function(_this) {
-        return function() {
-          _this.installButton.showLoader();
-          return _this.passwordModal(false, function(password, mysqlPassword) {
-            if (password != null) {
-              return _this.Installer.command(INSTALL, password);
-            } else {
-              return _this.installButton.hideLoader();
-            }
-          });
-        };
-      })(this)
+      callback: function() {
+        _this.installButton.showLoader();
+        return _this.passwordModal(false, function(password, mysqlPassword) {
+          if (password != null) {
+            return _this.Installer.command(INSTALL, password);
+          } else {
+            return _this.installButton.hideLoader();
+          }
+        });
+      }
     }));
     this.buttonContainer.addSubView(this.reinstallButton = new KDButtonView({
       title: "Reinstall",
@@ -390,18 +379,16 @@ ThinkupMainView = (function(_super) {
         color: "#FFFFFF",
         diameter: 12
       },
-      callback: (function(_this) {
-        return function() {
-          _this.reinstallButton.showLoader();
-          return _this.passwordModal(false, function(password) {
-            if (password != null) {
-              return _this.Installer.command(REINSTALL, password);
-            } else {
-              return _this.reinstallButton.hideLoader();
-            }
-          });
-        };
-      })(this)
+      callback: function() {
+        _this.reinstallButton.showLoader();
+        return _this.passwordModal(false, function(password) {
+          if (password != null) {
+            return _this.Installer.command(REINSTALL, password);
+          } else {
+            return _this.reinstallButton.hideLoader();
+          }
+        });
+      }
     }));
     this.buttonContainer.addSubView(this.uninstallButton = new KDButtonView({
       title: "Uninstall",
@@ -410,33 +397,30 @@ ThinkupMainView = (function(_super) {
         color: "#FFFFFF",
         diameter: 12
       },
-      callback: (function(_this) {
-        return function() {
-          _this.uninstallButton.showLoader();
-          return _this.passwordModal(false, function(password) {
-            if (password != null) {
-              return _this.Installer.command(UNINSTALL, password);
-            } else {
-              return _this.uninstallButton.hideLoader();
-            }
-          });
-        };
-      })(this)
+      callback: function() {
+        _this.uninstallButton.showLoader();
+        return _this.passwordModal(false, function(password) {
+          if (password != null) {
+            return _this.Installer.command(UNINSTALL, password);
+          } else {
+            return _this.uninstallButton.hideLoader();
+          }
+        });
+      }
     }));
     this.container.addSubView(new KDCustomHTMLView({
       cssClass: "description",
       partial: description
     }));
-    return KD.utils.defer((function(_this) {
-      return function() {
-        _this.Installer.on("status-update", _this.bound("statusUpdate"));
-        return _this.Installer.init();
-      };
-    })(this));
+    return KD.utils.defer(function() {
+      _this.Installer.on("status-update", _this.bound("statusUpdate"));
+      return _this.Installer.init();
+    });
   };
 
   ThinkupMainView.prototype.statusUpdate = function(message, percentage) {
-    var element, _i, _len, _ref, _ref1;
+    var element, _i, _len, _ref, _ref1,
+      _this = this;
     if (percentage == null) {
       percentage = 100;
     }
@@ -468,20 +452,19 @@ ThinkupMainView = (function(_super) {
         return this.statusUpdate(message, percentage);
       case WRONG_PASSWORD:
         this.Installer.state = this.Installer.lastState;
-        return this.passwordModal(true, (function(_this) {
-          return function(password) {
-            if (password != null) {
-              return _this.Installer.command(_this.Installer.lastCommand, password);
-            }
-          };
-        })(this));
+        return this.passwordModal(true, function(password) {
+          if (password != null) {
+            return _this.Installer.command(_this.Installer.lastCommand, password);
+          }
+        });
       default:
         return this.updateProgress(message, percentage);
     }
   };
 
   ThinkupMainView.prototype.passwordModal = function(error, cb) {
-    var fields, title;
+    var fields, title,
+      _this = this;
     if (!this.modal) {
       if (!error) {
         title = "" + appName + " needs your Koding passwords";
@@ -513,23 +496,19 @@ ThinkupMainView = (function(_super) {
         width: 550,
         height: "auto",
         cssClass: "new-kdmodal",
-        cancel: (function(_this) {
-          return function() {
-            _this.modal.destroy();
-            delete _this.modal;
-            return cb();
-          };
-        })(this),
+        cancel: function() {
+          _this.modal.destroy();
+          delete _this.modal;
+          return cb();
+        },
         tabs: {
           navigable: true,
-          callback: (function(_this) {
-            return function(form) {
-              _this.modal.destroy();
-              delete _this.modal;
-              cb(form.password);
-              return _this.Installer.mysqlPassword = form.mysqlPassword;
-            };
-          })(this),
+          callback: function(form) {
+            _this.modal.destroy();
+            delete _this.modal;
+            _this.Installer.mysqlPassword = form.mysqlPassword;
+            return cb(form.password);
+          },
           forms: {
             "Koding Passwords": {
               buttons: {
