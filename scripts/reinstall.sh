@@ -6,9 +6,9 @@ MYSQL_PASSWORD=$3
 
 if [ -z "$MYSQL_PASSWORD" ]
 then
-  MYSQL=mysql -u root
+  MYSQL="mysql -u root"
 else
-  MYSQL=mysql -u root --password=$MYSQL_PASSWORD
+  MYSQL="mysql -u root --password=$MYSQL_PASSWORD"
 fi
 
 mkdir -p $OUT
@@ -16,7 +16,7 @@ mkdir -p $OUT
 # Start Coding Here...
 touch $OUT/"10-Removing Thinkup"
 rm -rf /home/$USER/Web/thinkup
-$MYSQL -e "DROP DATABASE Thinkup"
+eval "$MYSQL -e 'DROP DATABASE Thinkup'"
 
 touch $OUT/"20-Updating Libraries"
 apt-get -q -y update
@@ -59,4 +59,4 @@ curl -X POST "http://$USER.kd.io/thinkup/install/index.php?step=3"   \
   -d "db_port="                                                      \
   -d "db_prefix=tu_"
 
-$MYSQL -e 'USE Thinkup; UPDATE tu_owners SET is_activated=1;'
+eval "$MYSQL -e 'USE Thinkup; UPDATE tu_owners SET is_activated=1;'"

@@ -5,9 +5,9 @@ MYSQL_PASSWORD=$3
 
 if [ -z "$MYSQL_PASSWORD" ]
 then
-  MYSQL=mysql -u root
+  MYSQL="mysql -u root"
 else
-  MYSQL=mysql -u root --password=$MYSQL_PASSWORD
+  MYSQL="mysql -u root --password=$MYSQL_PASSWORD"
 fi
 
 mkdir -p $OUT
@@ -54,5 +54,4 @@ curl -X POST "http://$USER.kd.io/thinkup/install/index.php?step=3"   \
   -d "db_port="                                                      \
   -d "db_prefix=tu_"
 
-
-$MYSQL -e 'USE Thinkup; UPDATE tu_owners SET is_activated=1;'
+eval "$MYSQL -e 'USE Thinkup; UPDATE tu_owners SET is_activated=1;'"
