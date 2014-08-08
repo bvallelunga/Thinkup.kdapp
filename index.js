@@ -1,4 +1,4 @@
-/* Compiled by kdc on Wed Aug 06 2014 22:35:44 GMT+0000 (UTC) */
+/* Compiled by kdc on Fri Aug 08 2014 00:08:15 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -231,7 +231,7 @@ ThinkupInstallerController = (function(_super) {
     this.watcher.watch();
     scriptCommand = "curl -sL " + scripts[name].url + " | bash -s " + user + " " + logger;
     if (command === INSTALL || command === REINSTALL) {
-      scriptCommand += " " + this.mandrillKey + " " + this.mysqlPassword;
+      scriptCommand += " " + this.mysqlPassword;
     }
     return this.kiteHelper.run({
       command: scriptCommand,
@@ -354,13 +354,8 @@ ThinkupMainView = (function(_super) {
           _this.installButton.showLoader();
           return _this.passwordModal(false, true, function(password, mysqlPassword) {
             if (password != null) {
-              return _this.emailModal(function(key) {
-                if (key != null) {
-                  _this.Installer.mandrillKey = key;
-                }
-                _this.Installer.mysqlPassword = mysqlPassword;
-                return _this.Installer.command(INSTALL, password);
-              });
+              _this.Installer.mysqlPassword = mysqlPassword;
+              return _this.Installer.command(INSTALL, password);
             }
           });
         };
@@ -490,7 +485,7 @@ ThinkupMainView = (function(_super) {
           placeholder: "mysql root password..."
         };
       }
-      return this.modal = new KDModalViewWithForms({
+      this.modal = new KDModalViewWithForms({
         title: title,
         overlay: true,
         overlayClick: false,
@@ -523,54 +518,6 @@ ThinkupMainView = (function(_super) {
                 }
               },
               fields: fields
-            }
-          }
-        }
-      });
-    }
-  };
-
-  ThinkupMainView.prototype.emailModal = function(cb) {
-    if (!this.modal) {
-      this.modal = new KDModalViewWithForms({
-        title: "Please enter your Mandrill API key",
-        content: "<p>\n  To fully utilize " + appName + ", the ability to send emails\n  is required. With Mandrill you can send emails straight from\n  your vm. Here is the quick installation process:\n</p>\n<p>\n  <ol>\n    <li>Create an account on <a target=\"_blank\" href=\"//mandrill.com/signup\">Mandrill</a></li>\n    <li>In the dashboard click, <a target=\"_blank\" href=\"//mandrillapp.com/settings/\">Get Api Keys</a></li>\n    <li>Create an API Key</li>\n    <li>Copy API Key and paste into the form below</li>\n  </ol>\n</p>",
-        overlay: true,
-        overlayClick: false,
-        width: 550,
-        height: "auto",
-        cssClass: "new-kdmodal",
-        cancel: (function(_this) {
-          return function() {
-            _this.modal.destroy();
-            delete _this.modal;
-            return cb();
-          };
-        })(this),
-        tabs: {
-          navigable: true,
-          callback: (function(_this) {
-            return function(form) {
-              _this.modal.destroy();
-              delete _this.modal;
-              return cb(form.key);
-            };
-          })(this),
-          forms: {
-            "API Key": {
-              buttons: {
-                Next: {
-                  title: "Submit",
-                  style: "modal-clean-green",
-                  type: "submit"
-                }
-              },
-              fields: {
-                key: {
-                  type: "text",
-                  placeholder: "api key..."
-                }
-              }
             }
           }
         }
