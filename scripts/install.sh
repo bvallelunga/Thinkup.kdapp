@@ -10,7 +10,6 @@ else
   MYSQL=mysql -u root --password=$MYSQL_PASSWORD
 fi
 
-rm -rf $OUT/*
 mkdir -p $OUT
 
 # Start Coding Here...
