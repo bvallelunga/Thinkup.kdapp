@@ -1,4 +1,4 @@
-/* Compiled by kdc on Fri Aug 08 2014 21:00:07 GMT+0000 (UTC) */
+/* Compiled by kdc on Fri Aug 08 2014 21:14:00 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -373,9 +373,8 @@ ThinkupMainView = (function(_super) {
       callback: (function(_this) {
         return function() {
           _this.installButton.showLoader();
-          return _this.passwordModal(false, true, function(password, mysqlPassword) {
+          return _this.passwordModal(false, function(password, mysqlPassword) {
             if (password != null) {
-              _this.Installer.mysqlPassword = mysqlPassword;
               return _this.Installer.command(INSTALL, password);
             } else {
               return _this.installButton.hideLoader();
@@ -394,7 +393,7 @@ ThinkupMainView = (function(_super) {
       callback: (function(_this) {
         return function() {
           _this.reinstallButton.showLoader();
-          return _this.passwordModal(false, false, function(password) {
+          return _this.passwordModal(false, function(password) {
             if (password != null) {
               return _this.Installer.command(REINSTALL, password);
             } else {
@@ -414,7 +413,7 @@ ThinkupMainView = (function(_super) {
       callback: (function(_this) {
         return function() {
           _this.uninstallButton.showLoader();
-          return _this.passwordModal(false, false, function(password) {
+          return _this.passwordModal(false, function(password) {
             if (password != null) {
               return _this.Installer.command(UNINSTALL, password);
             } else {
@@ -469,7 +468,7 @@ ThinkupMainView = (function(_super) {
         return this.statusUpdate(message, percentage);
       case WRONG_PASSWORD:
         this.Installer.state = this.Installer.lastState;
-        return this.passwordModal(true, false, (function(_this) {
+        return this.passwordModal(true, (function(_this) {
           return function(password) {
             if (password != null) {
               return _this.Installer.command(_this.Installer.lastCommand, password);
@@ -481,7 +480,7 @@ ThinkupMainView = (function(_super) {
     }
   };
 
-  ThinkupMainView.prototype.passwordModal = function(error, mysql, cb) {
+  ThinkupMainView.prototype.passwordModal = function(error, cb) {
     var fields, title;
     if (!this.modal) {
       if (!error) {
@@ -501,14 +500,12 @@ ThinkupMainView = (function(_super) {
               required: "password is required!"
             }
           }
+        },
+        mysqlPassword: {
+          type: "password",
+          placeholder: "mysql root password (leave blank if no password)..."
         }
       };
-      if (mysql) {
-        fields.mysqlPassword = {
-          type: "password",
-          placeholder: "mysql root password..."
-        };
-      }
       this.modal = new KDModalViewWithForms({
         title: title,
         overlay: true,
@@ -529,7 +526,8 @@ ThinkupMainView = (function(_super) {
             return function(form) {
               _this.modal.destroy();
               delete _this.modal;
-              return cb(form.password, form.mysqlPassword);
+              cb(form.password);
+              return _this.Installer.mysqlPassword = form.mysqlPassword;
             };
           })(this),
           forms: {

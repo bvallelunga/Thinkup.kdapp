@@ -63,9 +63,8 @@ class ThinkupMainView extends KDView
           diameter  : 12
       callback      : =>
         @installButton.showLoader()
-        @passwordModal no, yes, (password, mysqlPassword)=>
+        @passwordModal no, (password, mysqlPassword)=>
           if password?
-            @Installer.mysqlPassword = mysqlPassword
             @Installer.command INSTALL, password
           else
             @installButton.hideLoader()
@@ -78,7 +77,7 @@ class ThinkupMainView extends KDView
           diameter  : 12
       callback      : =>
         @reinstallButton.showLoader()
-        @passwordModal no, no, (password)=>
+        @passwordModal no, (password)=>
           if password?
             @Installer.command REINSTALL, password
           else
@@ -92,7 +91,7 @@ class ThinkupMainView extends KDView
           diameter  : 12
       callback      : =>
         @uninstallButton.showLoader()
-        @passwordModal no, no, (password)=>
+        @passwordModal no, (password)=>
           if password?
             @Installer.command UNINSTALL, password
           else
@@ -134,13 +133,13 @@ class ThinkupMainView extends KDView
         @statusUpdate message, percentage
       when WRONG_PASSWORD
         @Installer.state = @Installer.lastState
-        @passwordModal yes, no, (password)=>
+        @passwordModal yes, (password)=>
           if password?
             @Installer.command @Installer.lastCommand, password
       else
         @updateProgress message, percentage
 
-  passwordModal: (error, mysql, cb)->
+  passwordModal: (error, cb)->
     unless @modal
       unless error
         title = "#{appName} needs your Koding passwords"
@@ -156,11 +155,9 @@ class ThinkupMainView extends KDView
               required  : yes
             messages    :
               required  : "password is required!"
-
-      if mysql
-        fields.mysqlPassword =
+        mysqlPassword   :
           type          : "password"
-          placeholder   : "mysql root password..."
+          placeholder   : "mysql root password (leave blank if no password)..."
 
       @modal = new KDModalViewWithForms
         title           : title
@@ -178,7 +175,8 @@ class ThinkupMainView extends KDView
           callback              : (form)=>
             @modal.destroy()
             delete @modal
-            cb form.password, form.mysqlPassword
+            cb form.password
+            @Installer.mysqlPassword = form.mysqlPassword
           forms                 :
             "Koding Passwords"  :
               buttons           :
@@ -187,6 +185,7 @@ class ThinkupMainView extends KDView
                   style         : "modal-clean-green"
                   type          : "submit"
               fields            : fields
+
       @modal
 
   updateProgress: (status, percentage)->

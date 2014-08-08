@@ -1,7 +1,7 @@
 # Setup
 USER=$1
 OUT=$2
-MYSQL_PASSWORD=$3 && ""
+MYSQL_PASSWORD=$3
 rm -rf $OUT/*
 mkdir -p $OUT
 
