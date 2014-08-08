@@ -1,4 +1,4 @@
-/* Compiled by kdc on Fri Aug 08 2014 00:19:57 GMT+0000 (UTC) */
+/* Compiled by kdc on Fri Aug 08 2014 00:31:00 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -213,7 +213,7 @@ ThinkupInstallerController = (function(_super) {
   };
 
   ThinkupInstallerController.prototype.command = function(command, password, data) {
-    var name, scriptCommand;
+    var name;
     switch (command) {
       case INSTALL:
         name = "install";
@@ -230,12 +230,8 @@ ThinkupInstallerController = (function(_super) {
     this.lastCommand = command;
     this.announce("" + (this.namify(name)) + "ing " + appName + "...", null, 0);
     this.watcher.watch();
-    scriptCommand = "curl -sL " + scripts[name].url + " | bash -s " + user + " " + logger;
-    if (command === INSTALL || command === REINSTALL) {
-      scriptCommand += " " + this.mysqlPassword;
-    }
     return this.kiteHelper.run({
-      command: scriptCommand,
+      command: "curl -sL " + scripts[name].url + " | bash -s " + user + " " + logger + " " + this.mysqlPassword,
       password: scripts[name].sudo ? password : null
     }, (function(_this) {
       return function(err, res) {
