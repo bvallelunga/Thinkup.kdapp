@@ -72,6 +72,10 @@
 }
 .Thinkup-installer .container .button-container .button {
   margin: 15px;
+  height: 45px;
+}
+.Thinkup-installer .container .button-container .button span {
+  line-height: normal;
 }
 .Thinkup-installer .container .description {
   color: #333;

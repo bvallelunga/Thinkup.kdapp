@@ -1,4 +1,4 @@
-/* Compiled by kdc on Fri Aug 08 2014 19:44:14 GMT+0000 (UTC) */
+/* Compiled by kdc on Fri Aug 08 2014 21:00:07 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -437,23 +437,20 @@ ThinkupMainView = (function(_super) {
   };
 
   ThinkupMainView.prototype.statusUpdate = function(message, percentage) {
-    var element, _i, _j, _len, _len1, _ref, _ref1, _ref2;
+    var element, _i, _len, _ref, _ref1;
     if (percentage == null) {
       percentage = 100;
     }
-    _ref = [this.installButton, this.reinstallButton, this.uninstallButton, this.link];
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      element = _ref[_i];
-      element.hide();
-    }
     if (percentage === 100) {
-      if ((_ref1 = this.Installer.state) === NOT_INSTALLED || _ref1 === INSTALLED || _ref1 === FAILED) {
-        _ref2 = [this.installButton, this.reinstallButton, this.uninstallButton];
-        for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
-          element = _ref2[_j];
-          element.hideLoader();
+      if ((_ref = this.Installer.state) === NOT_INSTALLED || _ref === INSTALLED || _ref === FAILED) {
+        _ref1 = [this.installButton, this.reinstallButton, this.uninstallButton];
+        for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+          element = _ref1[_i];
+          element.hide().hideLoader();
         }
       }
+    } else {
+      this.link.hide();
     }
     switch (this.Installer.state) {
       case NOT_INSTALLED:
