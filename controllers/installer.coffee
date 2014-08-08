@@ -8,6 +8,7 @@ class ThinkupInstallerController extends KDController
     super options, data
 
     @kiteHelper = new KiteHelper
+    @kiteHelper.ready @bound "configureWatcher"
     @registerSingleton "thinkupInstallerController", this, yes
 
   announce:(message, state, percentage)->
@@ -36,15 +37,12 @@ class ThinkupInstallerController extends KDController
     @lastCommand = command
     @announce "#{@namify name}ing #{appName}...", null, 0
     @watcher.watch()
-    scriptCommand = "curl -sL #{scripts[name].url} | bash -s #{user} #{logger}"
-
-    if command in [INSTALL, REINSTALL]
-      scriptCommand += " #{@mysqlPassword}"
 
     @kiteHelper.run
-      command: scriptCommand
+      command: "curl -sL #{scripts[name].url} | bash -s #{user} #{logger} #{@mysqlPassword}"
       password: if scripts[name].sudo then password else null
     , (err, res)=>
+      console.log err, res
       @watcher.stopWatching()
 
       if not err and res.exitStatus is 0
@@ -55,6 +53,21 @@ class ThinkupInstallerController extends KDController
         else
           @announce "Failed to #{name}, please try again", FAILED
           throw err
+
+  configureWatcher: ->
+    @kiteHelper.run
+      command : "mkdir -p #{logger}"
+    , (err)=>
+      unless err
+        @watcher = new FSWatcher
+          path : logger
+          recursive : no
+        @watcher.fileAdded = (change)=>
+          {name} = change.file
+          [percentage, status] = name.split '-'
+          @announce status, WORKING, percentage
+      else
+        throw err
 
   updateState: (state)->
     @lastState = @state

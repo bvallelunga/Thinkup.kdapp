@@ -1,4 +1,4 @@
-/* Compiled by kdc on Fri Aug 08 2014 00:08:15 GMT+0000 (UTC) */
+/* Compiled by kdc on Fri Aug 08 2014 00:19:57 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -182,6 +182,7 @@ ThinkupInstallerController = (function(_super) {
     }
     ThinkupInstallerController.__super__.constructor.call(this, options, data);
     this.kiteHelper = new KiteHelper;
+    this.kiteHelper.ready(this.bound("configureWatcher"));
     this.registerSingleton("thinkupInstallerController", this, true);
   }
 
@@ -238,6 +239,7 @@ ThinkupInstallerController = (function(_super) {
       password: scripts[name].sudo ? password : null
     }, (function(_this) {
       return function(err, res) {
+        console.log(err, res);
         _this.watcher.stopWatching();
         if (!err && res.exitStatus === 0) {
           return _this.init();
@@ -248,6 +250,29 @@ ThinkupInstallerController = (function(_super) {
             _this.announce("Failed to " + name + ", please try again", FAILED);
             throw err;
           }
+        }
+      };
+    })(this));
+  };
+
+  ThinkupInstallerController.prototype.configureWatcher = function() {
+    return this.kiteHelper.run({
+      command: "mkdir -p " + logger
+    }, (function(_this) {
+      return function(err) {
+        if (!err) {
+          _this.watcher = new FSWatcher({
+            path: logger,
+            recursive: false
+          });
+          return _this.watcher.fileAdded = function(change) {
+            var name, percentage, status, _ref;
+            name = change.file.name;
+            _ref = name.split('-'), percentage = _ref[0], status = _ref[1];
+            return _this.announce(status, WORKING, percentage);
+          };
+        } else {
+          throw err;
         }
       };
     })(this));
