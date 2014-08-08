@@ -31,7 +31,14 @@ class ThinkupMainView extends KDView
             message = "Please set the database to <strong>Thinkup</strong> when configuring the app.<br>"
           else
             url     = launchURL
-            message = ""
+            message = """
+              Thinkup has been configured for a demo using these credentials:
+              <br>
+              <strong>Username:</strong> demo@koding.com
+              <br>
+              <strong>Password:</strong> demo1234
+              <br>
+            """
 
           @link.updatePartial """
             #{message}
@@ -60,6 +67,8 @@ class ThinkupMainView extends KDView
           if password?
             @Installer.mysqlPassword = mysqlPassword
             @Installer.command INSTALL, password
+          else
+            @installButton.hideLoader()
 
     @buttonContainer.addSubView @reinstallButton = new KDButtonView
       title         : "Reinstall"
@@ -72,6 +81,8 @@ class ThinkupMainView extends KDView
         @passwordModal no, no, (password)=>
           if password?
             @Installer.command REINSTALL, password
+          else
+            @reinstallButton.hideLoader()
 
     @buttonContainer.addSubView @uninstallButton = new KDButtonView
       title         : "Uninstall"
@@ -84,6 +95,8 @@ class ThinkupMainView extends KDView
         @passwordModal no, no, (password)=>
           if password?
             @Installer.command UNINSTALL, password
+          else
+            @uninstallButton.hideLoader()
 
     @container.addSubView new KDCustomHTMLView
       cssClass : "description"

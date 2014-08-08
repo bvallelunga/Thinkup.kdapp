@@ -28,7 +28,6 @@ scripts                 =                                                       
     sudo    : true
 description             =                                                           # The main description centered under the progress bar
 """
-<p>
   <div class="center bold">There are things Facebook & Twitter don't tell you.</div>
 </p>
 <p>

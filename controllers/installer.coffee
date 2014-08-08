@@ -25,14 +25,14 @@ class ThinkupInstallerController extends KDController
             @announce "#{appName} is installed", INSTALLED
         .catch (err)=>
             @announce "Failed to see if #{appName} is installed", FAILED
-            throw err
+            console.error err
 
   command: (command, password, data)->
     switch command
       when INSTALL then name = "install"
       when REINSTALL then name = "reinstall"
       when UNINSTALL then name = "uninstall"
-      else return throw "Command not registered."
+      else return console.error "Command not registered."
 
     @lastCommand = command
     @announce "#{@namify name}ing #{appName}...", null, 0
@@ -44,14 +44,14 @@ class ThinkupInstallerController extends KDController
     , (err, res)=>
       @watcher.stopWatching()
 
-      if not err and res.exitStatus is 0
-        @init()
-      else
-        if err? and err.details.message is "Permissiond denied. Wrong password"
+      if err? or res.exitStatus is not 0
+        if err.details?.message is "Permissiond denied. Wrong password"
           @announce "Your password was incorrect, please try again", WRONG_PASSWORD
         else
           @announce "Failed to #{name}, please try again", FAILED
-          throw err
+          console.error err
+      else
+        @init()
 
   configureWatcher: ->
     @kiteHelper.run
@@ -66,7 +66,7 @@ class ThinkupInstallerController extends KDController
           [percentage, status] = name.split '-'
           @announce status, WORKING, percentage
       else
-        throw err
+        console.error err
 
   updateState: (state)->
     @lastState = @state

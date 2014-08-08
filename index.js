@@ -1,4 +1,4 @@
-/* Compiled by kdc on Fri Aug 08 2014 00:42:31 GMT+0000 (UTC) */
+/* Compiled by kdc on Fri Aug 08 2014 19:44:14 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -48,7 +48,7 @@ scripts = {
   }
 };
 
-description = "<p>\n  <div class=\"center bold\">There are things Facebook & Twitter don't tell you.</div>\n</p>\n<p>\n  ThinkUp is a free, installable web application that gives you insights into your\n  activity on social networks, including Twitter, Facebook, Foursquare, and Google+.\n  Find out more at <a href=\"http://thinkup.com\">http://thinkup.com</a>.\n</p>\n<p>\n  <img src=\"" + github + "/resources/description.png\"/>\n</p>";
+description = "<div class=\"center bold\">There are things Facebook & Twitter don't tell you.</div>\n</p>\n<p>\nThinkUp is a free, installable web application that gives you insights into your\nactivity on social networks, including Twitter, Facebook, Foursquare, and Google+.\nFind out more at <a href=\"http://thinkup.com\">http://thinkup.com</a>.\n</p>\n<p>\n<img src=\"" + github + "/resources/description.png\"/>\n</p>";
 /* BLOCK STARTS: /home/bvallelunga/Applications/Thinkup.kdapp/controllers/kiteHelper.coffee */
 var KiteHelper,
   __hasProp = {}.hasOwnProperty,
@@ -206,7 +206,7 @@ ThinkupInstallerController = (function(_super) {
           }
         })["catch"](function(err) {
           _this.announce("Failed to see if " + appName + " is installed", FAILED);
-          throw err;
+          return console.error(err);
         });
       };
     })(this));
@@ -225,7 +225,7 @@ ThinkupInstallerController = (function(_super) {
         name = "uninstall";
         break;
       default:
-        throw "Command not registered.";
+        return console.error("Command not registered.");
     }
     this.lastCommand = command;
     this.announce("" + (this.namify(name)) + "ing " + appName + "...", null, 0);
@@ -235,17 +235,17 @@ ThinkupInstallerController = (function(_super) {
       password: scripts[name].sudo ? password : null
     }, (function(_this) {
       return function(err, res) {
-        console.log(err, res);
+        var _ref;
         _this.watcher.stopWatching();
-        if (!err && res.exitStatus === 0) {
-          return _this.init();
-        } else {
-          if ((err != null) && err.details.message === "Permissiond denied. Wrong password") {
+        if ((err != null) || res.exitStatus === !0) {
+          if (((_ref = err.details) != null ? _ref.message : void 0) === "Permissiond denied. Wrong password") {
             return _this.announce("Your password was incorrect, please try again", WRONG_PASSWORD);
           } else {
             _this.announce("Failed to " + name + ", please try again", FAILED);
-            throw err;
+            return console.error(err);
           }
+        } else {
+          return _this.init();
         }
       };
     })(this));
@@ -268,7 +268,7 @@ ThinkupInstallerController = (function(_super) {
             return _this.announce(status, WORKING, percentage);
           };
         } else {
-          throw err;
+          return console.error(err);
         }
       };
     })(this));
@@ -348,7 +348,7 @@ ThinkupMainView = (function(_super) {
             message = "Please set the database to <strong>Thinkup</strong> when configuring the app.<br>";
           } else {
             url = launchURL;
-            message = "";
+            message = "Thinkup has been configured for a demo using these credentials:\n<br>\n<strong>Username:</strong> demo@koding.com\n<br>\n<strong>Password:</strong> demo1234\n<br>";
           }
           _this.link.updatePartial("" + message + "\nClick here to launch " + appName + ":\n<a target='_blank' href='" + url + "'>" + url + "</a>");
           return _this.link.show();
@@ -377,6 +377,8 @@ ThinkupMainView = (function(_super) {
             if (password != null) {
               _this.Installer.mysqlPassword = mysqlPassword;
               return _this.Installer.command(INSTALL, password);
+            } else {
+              return _this.installButton.hideLoader();
             }
           });
         };
@@ -395,6 +397,8 @@ ThinkupMainView = (function(_super) {
           return _this.passwordModal(false, false, function(password) {
             if (password != null) {
               return _this.Installer.command(REINSTALL, password);
+            } else {
+              return _this.reinstallButton.hideLoader();
             }
           });
         };
@@ -413,6 +417,8 @@ ThinkupMainView = (function(_super) {
           return _this.passwordModal(false, false, function(password) {
             if (password != null) {
               return _this.Installer.command(UNINSTALL, password);
+            } else {
+              return _this.uninstallButton.hideLoader();
             }
           });
         };
