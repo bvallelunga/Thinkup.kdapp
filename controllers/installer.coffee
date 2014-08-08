@@ -42,7 +42,6 @@ class ThinkupInstallerController extends KDController
       command: "curl -sL #{scripts[name].url} | bash -s #{user} #{logger} #{@mysqlPassword}"
       password: if scripts[name].sudo then password else null
     , (err, res)=>
-      console.log err, res
       @watcher.stopWatching()
 
       if not err and res.exitStatus is 0
