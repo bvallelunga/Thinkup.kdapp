@@ -1,4 +1,4 @@
-/* Compiled by kdc on Fri Aug 08 2014 21:30:08 GMT+0000 (UTC) */
+/* Compiled by kdc on Fri Aug 08 2014 22:17:40 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -440,6 +440,7 @@ ThinkupMainView = (function(_super) {
     if (percentage == null) {
       percentage = 100;
     }
+    this.link.hide();
     if (percentage === 100) {
       if ((_ref = this.Installer.state) === NOT_INSTALLED || _ref === INSTALLED || _ref === FAILED) {
         _ref1 = [this.installButton, this.reinstallButton, this.uninstallButton];
@@ -448,8 +449,6 @@ ThinkupMainView = (function(_super) {
           element.hide().hideLoader();
         }
       }
-    } else {
-      this.link.hide();
     }
     switch (this.Installer.state) {
       case NOT_INSTALLED:
