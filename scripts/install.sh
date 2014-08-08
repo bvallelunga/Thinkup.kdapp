@@ -2,7 +2,8 @@
 USER=$1
 OUT=$2
 
-if [ -z "$3" ]; then
+if [ -z "$3" ]
+then
   MYSQL=mysql -u root
 else
   MYSQL=mysql -u root --password=$MYSQL_PASSWORD
