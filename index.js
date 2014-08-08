@@ -1,4 +1,4 @@
-/* Compiled by kdc on Tue Aug 05 2014 22:10:31 GMT+0000 (UTC) */
+/* Compiled by kdc on Wed Aug 06 2014 22:35:44 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -182,7 +182,6 @@ ThinkupInstallerController = (function(_super) {
     }
     ThinkupInstallerController.__super__.constructor.call(this, options, data);
     this.kiteHelper = new KiteHelper;
-    this.kiteHelper.ready(this.bound("configureWatcher"));
     this.registerSingleton("thinkupInstallerController", this, true);
   }
 
@@ -200,13 +199,9 @@ ThinkupInstallerController = (function(_super) {
           path: installChecker
         }).then(function(state) {
           if (!state) {
-            _this.announce("" + appName + " not installed", NOT_INSTALLED);
-            if (_this.configWatcher != null) {
-              return _this.configWatcher.stopWatching();
-            }
+            return _this.announce("" + appName + " not installed", NOT_INSTALLED);
           } else {
-            _this.announce("" + appName + " is installed", INSTALLED);
-            return _this.configureEmailWatcher();
+            return _this.announce("" + appName + " is installed", INSTALLED);
           }
         })["catch"](function(err) {
           _this.announce("Failed to see if " + appName + " is installed", FAILED);
@@ -216,8 +211,8 @@ ThinkupInstallerController = (function(_super) {
     })(this));
   };
 
-  ThinkupInstallerController.prototype.command = function(command, password) {
-    var name;
+  ThinkupInstallerController.prototype.command = function(command, password, data) {
+    var name, scriptCommand;
     switch (command) {
       case INSTALL:
         name = "install";
@@ -234,8 +229,12 @@ ThinkupInstallerController = (function(_super) {
     this.lastCommand = command;
     this.announce("" + (this.namify(name)) + "ing " + appName + "...", null, 0);
     this.watcher.watch();
+    scriptCommand = "curl -sL " + scripts[name].url + " | bash -s " + user + " " + logger;
+    if (command === INSTALL || command === REINSTALL) {
+      scriptCommand += " " + this.mandrillKey + " " + this.mysqlPassword;
+    }
     return this.kiteHelper.run({
-      command: "curl -sL " + scripts[name].url + " | bash -s " + user + " " + logger,
+      command: scriptCommand,
       password: scripts[name].sudo ? password : null
     }, (function(_this) {
       return function(err, res) {
@@ -252,65 +251,6 @@ ThinkupInstallerController = (function(_super) {
         }
       };
     })(this));
-  };
-
-  ThinkupInstallerController.prototype.configureWatcher = function() {
-    return this.kiteHelper.run({
-      command: "mkdir -p " + logger
-    }, (function(_this) {
-      return function(err) {
-        if (!err) {
-          _this.watcher = new FSWatcher({
-            path: logger,
-            recursive: false
-          });
-          return _this.watcher.fileAdded = function(change) {
-            var name, percentage, status, _ref;
-            name = change.file.name;
-            _ref = name.split('-'), percentage = _ref[0], status = _ref[1];
-            return _this.announce(status, WORKING, percentage);
-          };
-        } else {
-          throw err;
-        }
-      };
-    })(this));
-  };
-
-  ThinkupInstallerController.prototype.configureEmail = function() {
-    var find, replace;
-    find = "\\$THINKUP_CFG\\['mandrill_api_key'\\] \\= ''";
-    replace = "\\$THINKUP_CFG['mandrill_api_key'] = '" + this.mandrillKey + "'";
-    return this.kiteHelper.run({
-      command: "sed -i  \"s/" + find + "/" + replace + "/g\" " + configuredChecker + ";\nmysql -u root --password=" + this.mysqlPassword + " -e 'USE Thinkup; UPDATE tu_owners SET is_activated=1;'"
-    }, (function(_this) {
-      return function(err) {
-        if (err) {
-          _this.announce("Failed to configure email client, please try again");
-          throw err;
-        }
-      };
-    })(this));
-  };
-
-  ThinkupInstallerController.prototype.configureEmailWatcher = function() {
-    if (this.configWatcher) {
-      this.configWatcher.stopWatching();
-      delete this.configWatcher;
-    }
-    this.configWatcher = new FSWatcher({
-      path: installChecker,
-      recursive: false
-    });
-    this.configWatcher.fileAdded = (function(_this) {
-      return function(change) {
-        if (change.file.name === "config.inc.php") {
-          _this.configWatcher.stopWatching();
-          return _this.configureEmail();
-        }
-      };
-    })(this);
-    return this.configWatcher.watch();
   };
 
   ThinkupInstallerController.prototype.updateState = function(state) {
@@ -389,7 +329,7 @@ ThinkupMainView = (function(_super) {
             url = launchURL;
             message = "";
           }
-          _this.link.updatePartial("" + message + "\nClick here to launch " + appName + ": \n<a target='_blank' href='" + url + "'>" + url + "</a>");
+          _this.link.updatePartial("" + message + "\nClick here to launch " + appName + ":\n<a target='_blank' href='" + url + "'>" + url + "</a>");
           return _this.link.show();
         })["catch"](function(error) {
           console.error(error);
@@ -418,8 +358,8 @@ ThinkupMainView = (function(_super) {
                 if (key != null) {
                   _this.Installer.mandrillKey = key;
                 }
-                _this.Installer.command(INSTALL, password);
-                return _this.Installer.mysqlPassword = mysqlPassword;
+                _this.Installer.mysqlPassword = mysqlPassword;
+                return _this.Installer.command(INSTALL, password);
               });
             }
           });

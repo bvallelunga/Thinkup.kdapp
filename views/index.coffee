@@ -1,10 +1,10 @@
 class ThinkupMainView extends KDView
-    
+
   constructor:(options = {}, data)->
     options.cssClass = "#{appName}-installer main-view"
     @Installer = new ThinkupInstallerController
     super options, data
-  
+
   viewAppended: ->
     @addSubView @container = new KDCustomHTMLView
       tagName       : 'div'
@@ -15,27 +15,27 @@ class ThinkupMainView extends KDView
       cssClass      : 'logo'
       attributes    :
         src         : logo
-    
+
     @container.addSubView @progress = new KDProgressBarView
       initial       : 100
       title         : "Checking VM State..."
 
     @container.addSubView @link = new KDCustomHTMLView
       cssClass : 'hidden running-link'
-      
+
     @link.setSession = =>
       @Installer.isConfigured()
         .then (configured)=>
-          unless configured 
+          unless configured
             url     = configureURL
             message = "Please set the database to <strong>Thinkup</strong> when configuring the app.<br>"
-          else 
+          else
             url     = launchURL
             message = ""
-          
+
           @link.updatePartial """
             #{message}
-            Click here to launch #{appName}: 
+            Click here to launch #{appName}:
             <a target='_blank' href='#{url}'>#{url}</a>
           """
           @link.show()
@@ -43,11 +43,11 @@ class ThinkupMainView extends KDView
           console.error error
           @link.updatePartial "Failed to check if #{appName} is configured."
           @link.show()
-    
+
     @container.addSubView @buttonContainer = new KDCustomHTMLView
       tagName       : 'div'
       cssClass      : 'button-container'
-    
+
     @buttonContainer.addSubView @installButton = new KDButtonView
       title         : "Install #{appName}"
       cssClass      : 'button green solid hidden'
@@ -58,13 +58,9 @@ class ThinkupMainView extends KDView
         @installButton.showLoader()
         @passwordModal no, yes, (password, mysqlPassword)=>
           if password?
-            @emailModal (key)=>
-              if key?
-                @Installer.mandrillKey = key
-              
-              @Installer.command INSTALL, password
-              @Installer.mysqlPassword = mysqlPassword
-      
+            @Installer.mysqlPassword = mysqlPassword
+            @Installer.command INSTALL, password
+
     @buttonContainer.addSubView @reinstallButton = new KDButtonView
       title         : "Reinstall"
       cssClass      : 'button solid hidden'
@@ -76,7 +72,7 @@ class ThinkupMainView extends KDView
         @passwordModal no, no, (password)=>
           if password?
             @Installer.command REINSTALL, password
-        
+
     @buttonContainer.addSubView @uninstallButton = new KDButtonView
       title         : "Uninstall"
       cssClass      : 'button red solid hidden'
@@ -92,25 +88,25 @@ class ThinkupMainView extends KDView
     @container.addSubView new KDCustomHTMLView
       cssClass : "description"
       partial  : description
-    
+
     KD.utils.defer =>
       @Installer.on "status-update", @bound "statusUpdate"
       @Installer.init()
-    
+
   statusUpdate: (message, percentage)->
     percentage ?= 100
     element.hide() for element in [
       @installButton, @reinstallButton, @uninstallButton, @link
     ]
-    
+
     if percentage is 100
-      if @Installer.state in [NOT_INSTALLED, INSTALLED, FAILED] 
+      if @Installer.state in [NOT_INSTALLED, INSTALLED, FAILED]
         element.hideLoader() for element in [
           @installButton, @reinstallButton, @uninstallButton
         ]
-    
+
     switch @Installer.state
-      when NOT_INSTALLED 
+      when NOT_INSTALLED
         @installButton.show()
         @updateProgress message, percentage
       when INSTALLED
@@ -131,14 +127,14 @@ class ThinkupMainView extends KDView
             @Installer.command @Installer.lastCommand, password
       else
         @updateProgress message, percentage
-          
+
   passwordModal: (error, mysql, cb)->
     unless @modal
       unless error
         title = "#{appName} needs your Koding passwords"
       else
         title = "Incorrect password, please try again"
-      
+
       fields =
         password        :
           type          : "password"
@@ -148,26 +144,26 @@ class ThinkupMainView extends KDView
               required  : yes
             messages    :
               required  : "password is required!"
-        
+
       if mysql
         fields.mysqlPassword =
-          type                : "password"
-          placeholder         : "mysql root password..."
-    
+          type          : "password"
+          placeholder   : "mysql root password..."
+
       @modal = new KDModalViewWithForms
-        title         : title
-        overlay       : yes
-        overlayClick  : no
-        width         : 550
-        height        : "auto"
-        cssClass      : "new-kdmodal"
-        cancel        : =>
+        title           : title
+        overlay         : yes
+        overlayClick    : no
+        width           : 550
+        height          : "auto"
+        cssClass        : "new-kdmodal"
+        cancel          : =>
           @modal.destroy()
           delete @modal
           cb()
         tabs                    :
           navigable             : yes
-          callback              : (form)=> 
+          callback              : (form)=>
             @modal.destroy()
             delete @modal
             cb form.password, form.mysqlPassword
@@ -179,54 +175,7 @@ class ThinkupMainView extends KDView
                   style         : "modal-clean-green"
                   type          : "submit"
               fields            : fields
-
-  emailModal: (cb)->
-    unless @modal
-      @modal = new KDModalViewWithForms
-        title    : "Please enter your Mandrill API key"
-        content  : """
-        <p>
-          To fully utilize #{appName}, the ability to send emails
-          is required. With Mandrill you can send emails straight from
-          your vm. Here is the quick installation process:
-        </p>
-        <p>
-          <ol>
-            <li>Create an account on <a target="_blank" href="//mandrill.com/signup">Mandrill</a></li>
-            <li>In the dashboard click, <a target="_blank" href="//mandrillapp.com/settings/">Get Api Keys</a></li>
-            <li>Create an API Key</li>
-            <li>Copy API Key and paste into the form below</li>
-          </ol>
-        </p>
-        """
-        overlay       : yes
-        overlayClick  : no
-        width         : 550
-        height        : "auto"
-        cssClass      : "new-kdmodal"
-        cancel        : =>
-          @modal.destroy()
-          delete @modal
-          cb()
-        tabs                    :
-          navigable             : yes
-          callback              : (form)=>
-            @modal.destroy()
-            delete @modal
-            cb form.key 
-          forms                 :
-            "API Key"           :
-              buttons           :
-                Next            :
-                  title         : "Submit"
-                  style         : "modal-clean-green"
-                  type          : "submit"
-              fields            :
-                key             :
-                  type          : "text"
-                  placeholder   : "api key..."
-      
       @modal
-  
+
   updateProgress: (status, percentage)->
     @progress.updateBar percentage, '%', status

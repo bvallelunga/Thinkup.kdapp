@@ -8,7 +8,6 @@ class ThinkupInstallerController extends KDController
     super options, data
 
     @kiteHelper = new KiteHelper
-    @kiteHelper.ready @bound "configureWatcher"
     @registerSingleton "thinkupInstallerController", this, yes
 
   announce:(message, state, percentage)->
@@ -21,15 +20,13 @@ class ThinkupInstallerController extends KDController
         .then (state)=>
           unless state
             @announce "#{appName} not installed", NOT_INSTALLED
-            @configWatcher.stopWatching() if @configWatcher?
           else
             @announce "#{appName} is installed", INSTALLED
-            @configureEmailWatcher()
         .catch (err)=>
             @announce "Failed to see if #{appName} is installed", FAILED
             throw err
 
-  command: (command, password)->
+  command: (command, password, data)->
     switch command
       when INSTALL then name = "install"
       when REINSTALL then name = "reinstall"
@@ -39,9 +36,13 @@ class ThinkupInstallerController extends KDController
     @lastCommand = command
     @announce "#{@namify name}ing #{appName}...", null, 0
     @watcher.watch()
+    scriptCommand = "curl -sL #{scripts[name].url} | bash -s #{user} #{logger}"
+
+    if command in [INSTALL, REINSTALL]
+      scriptCommand += " #{@mysqlPassword}"
 
     @kiteHelper.run
-      command: "curl -sL #{scripts[name].url} | bash -s #{user} #{logger}"
+      command: scriptCommand
       password: if scripts[name].sudo then password else null
     , (err, res)=>
       @watcher.stopWatching()
@@ -54,49 +55,6 @@ class ThinkupInstallerController extends KDController
         else
           @announce "Failed to #{name}, please try again", FAILED
           throw err
-
-  configureWatcher: ->
-    @kiteHelper.run
-      command : "mkdir -p #{logger}"
-    , (err)=>
-      unless err
-        @watcher = new FSWatcher
-          path : logger
-          recursive : no
-        @watcher.fileAdded = (change)=>
-          {name} = change.file
-          [percentage, status] = name.split '-'
-          @announce status, WORKING, percentage
-      else
-        throw err
-
-  configureEmail: ->
-    find = "\\$THINKUP_CFG\\['mandrill_api_key'\\] \\= ''"
-    replace = "\\$THINKUP_CFG['mandrill_api_key'] = '#{@mandrillKey}'"
-
-    @kiteHelper.run
-      command : """
-        sed -i  "s/#{find}/#{replace}/g" #{configuredChecker};
-        mysql -u root --password=#{@mysqlPassword} -e 'USE Thinkup; UPDATE tu_owners SET is_activated=1;'
-      """
-    , (err)=>
-      if err
-        @announce "Failed to configure email client, please try again"
-        throw err
-
-  configureEmailWatcher: ->
-    if @configWatcher
-      @configWatcher.stopWatching()
-      delete @configWatcher
-
-    @configWatcher = new FSWatcher
-      path      : installChecker
-      recursive : no
-    @configWatcher.fileAdded = (change)=>
-      if change.file.name is "config.inc.php"
-        @configWatcher.stopWatching()
-        @configureEmail()
-    @configWatcher.watch()
 
   updateState: (state)->
     @lastState = @state
