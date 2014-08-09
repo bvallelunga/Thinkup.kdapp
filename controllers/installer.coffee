@@ -39,7 +39,7 @@ class ThinkupInstallerController extends KDController
     @watcher.watch()
 
     @kiteHelper.run
-      command: "curl -sL #{scripts[name].url} | bash -s #{user} #{logger} #{@mysqlPassword} > #{logger}/../#{name}.out"
+      command: "curl -sL #{scripts[name].url} | bash -s #{user} #{logger}/#{getSession()} #{@mysqlPassword} > #{logger}/#{name}.out"
       password: if scripts[name].sudo then password else null
     , (err, res)=>
       @watcher.stopWatching()
@@ -60,11 +60,11 @@ class ThinkupInstallerController extends KDController
       unless err
         @watcher = new FSWatcher
           path : logger
-          recursive : no
+          recursive : yes
         @watcher.fileAdded = (change)=>
           {name} = change.file
           [percentage, status] = name.split '-'
-          @announce status, WORKING, percentage
+          @announce status, WORKING, percentage if percentage? and status?
       else
         console.error err
 

@@ -4,7 +4,7 @@ FAILED, WRONG_PASSWORD, INSTALL,
 REINSTALL, UNINSTALL]   = [0..7]
 user                    = KD.nick()
 domain                  = "#{user}.kd.io"
-session                 = (Math.random() + 1).toString(36).substring 7
+getSession              = -> (Math.random() + 1).toString(36).substring 7
 
 # Configure App Here
 app                     = "thinkup"                                                 # App name used for variables
@@ -15,7 +15,7 @@ launchURL               = "https://#{domain}/#{app}/"                           
 configureURL            = "https://#{domain}/#{app}/install"                        # The url used to configure app
 installChecker          = "/home/#{user}/Web/#{app}/"                               # Path used to check if the app is instaled
 configuredChecker       = "/home/#{user}/Web/#{app}/config.inc.php"                 # Path used to check if app is configured (can be set to "false")
-logger                  = "/tmp/_#{appName}Installer.out/#{session}"                # Path used to log installer progress
+logger                  = "/tmp/_#{appName}Installer.out"                           # Path used to log installer progress
 scripts                 =                                                           # Scripts with url and if sudo access required
   install   :
     url     : "#{github}/scripts/install.sh"
