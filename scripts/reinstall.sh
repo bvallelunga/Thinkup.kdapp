@@ -45,7 +45,7 @@ sudo rm /etc/init/apache.override;
 sudo service apache2 restart
 
 touch $OUT/"100-Configuring Thinkup"
-curl -X POST "http://$USER.kd.io/thinkup/install/index.php?step=3"   \
+curl -X POST "http://localhost/thinkup/install/index.php?step=3"     \
   -d "full_name=Demo%20User"                                         \
   -d "site_email=demo%40koding.com"                                  \
   -d "password=demo1234"                                             \
