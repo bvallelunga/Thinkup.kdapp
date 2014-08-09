@@ -1,4 +1,4 @@
-/* Compiled by kdc on Fri Aug 08 2014 22:18:57 GMT+0000 (UTC) */
+/* Compiled by kdc on Sat Aug 09 2014 00:42:17 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 /* BLOCK STARTS: /home/bvallelunga/Applications/Thinkup.kdapp/config.coffee */

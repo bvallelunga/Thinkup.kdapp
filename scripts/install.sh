@@ -14,10 +14,10 @@ mkdir -p $OUT
 
 # Start Coding Here...
 touch $OUT/"20-Updating Libraries"
-apt-get -q -y update
+sudo apt-get -q -y update
 
 touch $OUT/"30-Installing CURL Libraries"
-apt-get install -q -y curl libcurl3 libcurl3-dev php5-curl
+sudo apt-get install -q -y curl libcurl3 libcurl3-dev php5-curl
 
 touch $OUT/"40-Downloading Thinkup"
 wget http://thinkup.com/download/ -O /tmp/thinkup.zip
@@ -28,16 +28,16 @@ rm -f /tmp/thinkup.zip
 
 touch $OUT/"70-Installing Thinkup"
 mv /tmp/thinkup /home/$USER/Web/thinkup
-chmod -R 755 /home/$USER/Web/thinkup
-chown -R www-data /home/$USER/Web/thinkup
+sudo chmod -R 755 /home/$USER/Web/thinkup
+sudo chown -R www-data /home/$USER/Web/thinkup
 
 touch $OUT/"80-Restarting MYSQL"
-rm /etc/init/mysql.override
-service mysql restart
+sudo rm /etc/init/mysql.override
+sudo service mysql restart
 
 touch $OUT/"90-Restarting Apache"
-rm /etc/init/apache.override;
-service apache2 restart
+sudo rm /etc/init/apache.override;
+sudo service apache2 restart
 
 touch $OUT/"100-Configuring Thinkup"
 curl -X POST "http://$USER.kd.io/thinkup/install/index.php?step=3"   \
