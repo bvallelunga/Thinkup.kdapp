@@ -23,7 +23,7 @@ class KiteHelper extends KDController
         resolve()
 
   getVm:->
-    @_vm or= @_vms.last
+    @_vm or= @_vms.first
     return @_vm
 
   getKite:->
