@@ -15,7 +15,7 @@ launchURL               = "https://#{domain}/#{app}/"                           
 configureURL            = "https://#{domain}/#{app}/install"                        # The url used to configure app
 installChecker          = "/home/#{user}/Web/#{app}/"                               # Path used to check if the app is instaled
 configuredChecker       = "/home/#{user}/Web/#{app}/config.inc.php"                 # Path used to check if app is configured (can be set to "false")
-logger                  = "/home/#{user}/_#{appName}Installer.#{getSession()}.out"  # Path used to log installer progress
+logger                  = "/tmp/_#{appName}Installer.#{getSession()}.out"           # Path used to log installer progress
 scripts                 =                                                           # Scripts with url and if sudo access required
   install   :
     url     : "#{github}/scripts/install.sh"

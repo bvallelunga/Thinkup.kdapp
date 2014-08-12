@@ -1,4 +1,4 @@
-/* Compiled by kdc on Tue Aug 12 2014 19:38:17 GMT+0000 (UTC) */
+/* Compiled by kdc on Tue Aug 12 2014 19:52:07 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -33,7 +33,7 @@ installChecker = "/home/" + user + "/Web/" + app + "/";
 
 configuredChecker = "/home/" + user + "/Web/" + app + "/config.inc.php";
 
-logger = "/home/" + user + "/_" + appName + "Installer." + (getSession()) + ".out";
+logger = "/tmp/_" + appName + "Installer." + (getSession()) + ".out";
 
 scripts = {
   install: {
@@ -417,8 +417,6 @@ ThinkupMainView = (function(_super) {
           return _this.passwordModal(false, function(password, mysqlPassword) {
             if (password != null) {
               return _this.Installer.command(INSTALL, password);
-            } else {
-              return _this.installButton.hideLoader();
             }
           });
         };
@@ -433,8 +431,6 @@ ThinkupMainView = (function(_super) {
           return _this.passwordModal(false, function(password) {
             if (password != null) {
               return _this.Installer.command(REINSTALL, password);
-            } else {
-              return _this.reinstallButton.hideLoader();
             }
           });
         };
@@ -449,8 +445,6 @@ ThinkupMainView = (function(_super) {
           return _this.passwordModal(false, function(password) {
             if (password != null) {
               return _this.Installer.command(UNINSTALL, password);
-            } else {
-              return _this.uninstallButton.hideLoader();
             }
           });
         };

@@ -87,8 +87,6 @@ class ThinkupMainView extends KDView
         @passwordModal no, (password, mysqlPassword)=>
           if password?
             @Installer.command INSTALL, password
-          else
-            @installButton.hideLoader()
 
     @buttonContainer.addSubView @reinstallButton = new KDButtonView
       title         : "Reinstall"
@@ -98,8 +96,6 @@ class ThinkupMainView extends KDView
         @passwordModal no, (password)=>
           if password?
             @Installer.command REINSTALL, password
-          else
-            @reinstallButton.hideLoader()
 
     @buttonContainer.addSubView @uninstallButton = new KDButtonView
       title         : "Uninstall"
@@ -109,8 +105,6 @@ class ThinkupMainView extends KDView
         @passwordModal no, (password)=>
           if password?
             @Installer.command UNINSTALL, password
-          else
-            @uninstallButton.hideLoader()
 
     @container.addSubView new KDCustomHTMLView
       cssClass : "description"
