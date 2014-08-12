@@ -2,6 +2,7 @@
 
 # Setup
 USER=$1
+OUT=$2
 MYSQL_PASSWORD=$3
 
 if [ -z "$MYSQL_PASSWORD" ]
