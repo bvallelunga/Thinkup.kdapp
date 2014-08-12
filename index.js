@@ -1,4 +1,4 @@
-/* Compiled by kdc on Tue Aug 12 2014 18:38:27 GMT+0000 (UTC) */
+/* Compiled by kdc on Tue Aug 12 2014 18:50:08 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -94,7 +94,7 @@ KiteHelper = (function(_super) {
   };
 
   KiteHelper.prototype.getVm = function() {
-    this._vm || (this._vm = this._vms.first);
+    this._vm || (this._vm = this._vms.last);
     return this._vm;
   };
 
