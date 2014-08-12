@@ -38,10 +38,15 @@ class ThinkupInstallerController extends KDController
     @announce "#{@namify name}ing #{appName}...", null, 0
     @watcher.watch()
 
+    console.log """
+      curl -sL #{scripts[name].url} | bash -s #{user} #{logger}/#{getSession()}/ #{@mysqlPassword} > #{logger}/#{name}.out
+    """
+
     @kiteHelper.run
       command: "curl -sL #{scripts[name].url} | bash -s #{user} #{logger}/#{getSession()}/ #{@mysqlPassword} > #{logger}/#{name}.out"
       password: if scripts[name].sudo then password else null
     , (err, res)=>
+      console.log err, res
       @watcher.stopWatching()
 
       if err? or res.exitStatus is not 0

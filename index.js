@@ -1,4 +1,4 @@
-/* Compiled by kdc on Tue Aug 12 2014 00:16:42 GMT+0000 (UTC) */
+/* Compiled by kdc on Tue Aug 12 2014 18:23:34 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -33,7 +33,7 @@ installChecker = "/home/" + user + "/Web/" + app + "/";
 
 configuredChecker = "/home/" + user + "/Web/" + app + "/config.inc.php";
 
-logger = "/tmp/_" + appName + "Installer.out";
+logger = "/tmp/_" + appName + "Installer." + (getSession()) + ".out";
 
 scripts = {
   install: {
@@ -232,12 +232,14 @@ ThinkupInstallerController = (function(_super) {
     this.lastCommand = command;
     this.announce("" + (this.namify(name)) + "ing " + appName + "...", null, 0);
     this.watcher.watch();
+    console.log("curl -sL " + scripts[name].url + " | bash -s " + user + " " + logger + "/" + (getSession()) + "/ " + this.mysqlPassword + " > " + logger + "/" + name + ".out");
     return this.kiteHelper.run({
       command: "curl -sL " + scripts[name].url + " | bash -s " + user + " " + logger + "/" + (getSession()) + "/ " + this.mysqlPassword + " > " + logger + "/" + name + ".out",
       password: scripts[name].sudo ? password : null
     }, (function(_this) {
       return function(err, res) {
         var _ref;
+        console.log(err, res);
         _this.watcher.stopWatching();
         if ((err != null) || res.exitStatus === !0) {
           if (((_ref = err.details) != null ? _ref.message : void 0) === "Permissiond denied. Wrong password") {
@@ -457,7 +459,6 @@ ThinkupMainView = (function(_super) {
     if (percentage == null) {
       percentage = 100;
     }
-    this.link.hide();
     if (percentage === 100) {
       if ((_ref = this.Installer.state) === NOT_INSTALLED || _ref === INSTALLED || _ref === FAILED) {
         _ref1 = [this.installButton, this.reinstallButton, this.uninstallButton];
@@ -469,14 +470,17 @@ ThinkupMainView = (function(_super) {
     }
     switch (this.Installer.state) {
       case NOT_INSTALLED:
+        this.link.hide();
         this.installButton.show();
         return this.updateProgress(message, percentage);
       case INSTALLED:
+        this.link.show();
         this.reinstallButton.show();
         this.uninstallButton.show();
         this.link.setSession();
         return this.updateProgress(message, percentage);
       case WORKING:
+        this.link.hide();
         this.Installer.state = this.Installer.lastState;
         return this.updateProgress(message, percentage);
       case FAILED:

@@ -141,6 +141,7 @@ class ThinkupMainView extends KDView
         @link.setSession()
         @updateProgress message, percentage
       when WORKING
+        @link.hide()
         @Installer.state = @Installer.lastState
         @updateProgress message, percentage
       when FAILED
