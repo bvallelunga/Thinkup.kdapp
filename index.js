@@ -1,4 +1,4 @@
-/* Compiled by kdc on Sat Aug 09 2014 01:22:18 GMT+0000 (UTC) */
+/* Compiled by kdc on Tue Aug 12 2014 00:16:42 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -233,7 +233,7 @@ ThinkupInstallerController = (function(_super) {
     this.announce("" + (this.namify(name)) + "ing " + appName + "...", null, 0);
     this.watcher.watch();
     return this.kiteHelper.run({
-      command: "\"\ncurl -sL " + scripts[name].url + " | bash -s " + user + " " + logger + "/" + (getSession()) + " " + this.mysqlPassword + " > " + logger + "/" + name + ".out",
+      command: "curl -sL " + scripts[name].url + " | bash -s " + user + " " + logger + "/" + (getSession()) + "/ " + this.mysqlPassword + " > " + logger + "/" + name + ".out",
       password: scripts[name].sudo ? password : null
     }, (function(_this) {
       return function(err, res) {
@@ -336,9 +336,34 @@ ThinkupMainView = (function(_super) {
         src: logo
       }
     }));
-    this.container.addSubView(this.progress = new KDProgressBarView({
-      initial: 100,
-      title: "Checking VM State..."
+    this.container.addSubView(this.progress = new KDCustomHTMLView({
+      tagName: 'div',
+      cssClass: 'progress-container'
+    }));
+    this.progress.updateBar = function(percentage, unit, status) {
+      if (percentage === 100) {
+        this.loader.hide();
+      } else {
+        this.loader.show();
+      }
+      this.title.updatePartial(status);
+      return this.bar.setWidth(percentage, unit);
+    };
+    this.progress.addSubView(this.progress.title = new KDCustomHTMLView({
+      tagName: 'div',
+      cssClass: 'title',
+      partial: 'Checking VM State...'
+    }));
+    this.progress.addSubView(this.progress.bar = new KDCustomHTMLView({
+      tagName: 'div',
+      cssClass: 'bar'
+    }));
+    this.progress.addSubView(this.progress.loader = new KDLoaderView({
+      showLoader: true,
+      size: {
+        width: 20
+      },
+      cssClass: "spinner"
     }));
     this.container.addSubView(this.link = new KDCustomHTMLView({
       cssClass: 'hidden running-link'
@@ -370,10 +395,6 @@ ThinkupMainView = (function(_super) {
     this.buttonContainer.addSubView(this.installButton = new KDButtonView({
       title: "Install " + appName,
       cssClass: 'button green solid hidden',
-      loader: {
-        color: "#FFFFFF",
-        diameter: 12
-      },
       callback: (function(_this) {
         return function() {
           _this.installButton.showLoader();
@@ -390,10 +411,6 @@ ThinkupMainView = (function(_super) {
     this.buttonContainer.addSubView(this.reinstallButton = new KDButtonView({
       title: "Reinstall",
       cssClass: 'button solid hidden',
-      loader: {
-        color: "#FFFFFF",
-        diameter: 12
-      },
       callback: (function(_this) {
         return function() {
           _this.reinstallButton.showLoader();
@@ -410,10 +427,6 @@ ThinkupMainView = (function(_super) {
     this.buttonContainer.addSubView(this.uninstallButton = new KDButtonView({
       title: "Uninstall",
       cssClass: 'button red solid hidden',
-      loader: {
-        color: "#FFFFFF",
-        diameter: 12
-      },
       callback: (function(_this) {
         return function() {
           _this.uninstallButton.showLoader();
@@ -450,7 +463,7 @@ ThinkupMainView = (function(_super) {
         _ref1 = [this.installButton, this.reinstallButton, this.uninstallButton];
         for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
           element = _ref1[_i];
-          element.hide().hideLoader();
+          element.hide();
         }
       }
     }
