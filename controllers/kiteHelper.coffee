@@ -1,6 +1,9 @@
 class KiteHelper extends KDController
 
-  vmIsStarting: false
+  constructor:(options = {}, data)->
+    @selectVm = new SelectVM
+    @vmIsStarting = false
+    super options, data
 
   getReady:->
     new Promise (resolve, reject) =>
@@ -22,33 +25,39 @@ class KiteHelper extends KDController
         @emit 'ready'
         resolve()
 
-  getVm:->
-    @_vm or= @_vms.last
-    return @_vm
+  getVm: (cb)->
+    if @defaultVm?
+      return cb @defaultVm
+
+    @selectVm.showModal @_vms, (vm)=>
+      @defaultVm = vm
+      cb vm
 
   getKite:->
     new Promise (resolve, reject)=>
       @getReady().then =>
-        vm = @getVm().hostnameAlias
-        {vmController} = KD.singletons
+        @getVm (vm)=>
+          {vmController} = KD.singletons
 
-        unless kite = @_kites[vm]
-          return reject
-            message: "No such kite for #{vm}"
+          unless kite = @_kites[vm]
+            return reject
+              message: "No such kite for #{vm}"
 
-        vmController.info vm, (err, vmn, info)=>
-          if not @vmIsStarting and info.state is "STOPPED"
-            @vmIsStarting = true
-            timeout = 10 * 60 * 1000
-            kite.options.timeout = timeout
+          console.log vm
 
-            kite.vmOn().then ->
+          vmController.info vm, (err, vmn, info)=>
+            if not @vmIsStarting and info.state is "STOPPED"
+              @vmIsStarting = true
+              timeout = 10 * 60 * 1000
+              kite.options.timeout = timeout
+
+              kite.vmOn().then ->
+                resolve kite
+              .timeout(timeout)
+              .catch (err)->
+                reject err
+            else
               resolve kite
-            .timeout(timeout)
-            .catch (err)->
-              reject err
-          else
-            resolve kite
 
   run:(options, callback)->
     @getKite().then (kite)->

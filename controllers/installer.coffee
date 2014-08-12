@@ -62,17 +62,18 @@ class ThinkupInstallerController extends KDController
         command : "mkdir -p #{logger}/#{session}"
       , (err)=>
         unless err
-          watcher = new FSWatcher
-            path : "#{logger}/#{session}"
-            recursive : no
-            vmName: @kiteHelper.getVm().hostnameAlias
-          watcher.fileAdded = (change)=>
-            {name} = change.file
-            [percentage, status] = name.split '-'
-            @announce status, WORKING, percentage if percentage? and status?
+          @kiteHelper.getVm (vm)=>
+            watcher = new FSWatcher
+              path : "#{logger}/#{session}"
+              recursive : no
+              vmName: vm
+            watcher.fileAdded = (change)=>
+              {name} = change.file
+              [percentage, status] = name.split '-'
+              @announce status, WORKING, percentage if percentage? and status?
 
-          watcher.watch()
-          resolve watcher
+            watcher.watch()
+            resolve watcher
         else
           reject err
 

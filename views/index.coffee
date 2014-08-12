@@ -129,7 +129,6 @@ class ThinkupMainView extends KDView
         @installButton.show()
         @updateProgress message, percentage
       when INSTALLED
-        @link.show()
         @reinstallButton.show()
         @uninstallButton.show()
         @link.setSession()
@@ -196,7 +195,6 @@ class ThinkupMainView extends KDView
                   type          : "submit"
               fields            : fields
 
-      @modal
 
   updateProgress: (status, percentage)->
     @progress.updateBar percentage, '%', status

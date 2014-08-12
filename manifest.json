@@ -15,6 +15,7 @@
       "app": {
         "files": [
           "./config.coffee",
+          "./views/selectVM.coffee",
           "./controllers/kiteHelper.coffee",
           "./controllers/installer.coffee",
           "./views/index.coffee",

@@ -9,6 +9,20 @@
   display: list-item;
   text-align: -webkit-match-parent;
 }
+.new-kdmodal .item {
+  padding: 10px;
+  border-bottom: solid 1px #ededed;
+  cursor: pointer;
+}
+.new-kdmodal .item:last-child {
+  border: none;
+}
+.new-kdmodal .item:hover {
+  color: #138345;
+}
+.new-kdmodal .item:hover:active {
+  color: #106c3a;
+}
 .Thinkup-installer {
   width: 100%;
   height: 100%%;

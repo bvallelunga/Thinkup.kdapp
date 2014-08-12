@@ -1,4 +1,4 @@
-/* Compiled by kdc on Tue Aug 12 2014 19:52:07 GMT+0000 (UTC) */
+/* Compiled by kdc on Tue Aug 12 2014 22:35:28 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -51,6 +51,66 @@ scripts = {
 };
 
 description = "<div class=\"center bold\">There are things Facebook & Twitter don't tell you.</div>\n</p>\n<p>\nThinkUp is a free, installable web application that gives you insights into your\nactivity on social networks, including Twitter, Facebook, Foursquare, and Google+.\nFind out more at <a href=\"http://thinkup.com\">http://thinkup.com</a>.\n</p>\n<p>\n<img src=\"" + github + "/resources/description.png\"/>\n</p>";
+/* BLOCK STARTS: /home/bvallelunga/Applications/Thinkup.kdapp/views/selectVM.coffee */
+var SelectVM,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+SelectVM = (function(_super) {
+  __extends(SelectVM, _super);
+
+  function SelectVM(options, data) {
+    if (options == null) {
+      options = {};
+    }
+    SelectVM.__super__.constructor.call(this, options, data);
+  }
+
+  SelectVM.prototype.showModal = function(vms, cb) {
+    var container, vm, _i, _len;
+    if (!this.modal) {
+      this.addSubView(container = new KDCustomHTMLView({
+        tagName: 'div'
+      }));
+      for (_i = 0, _len = vms.length; _i < _len; _i++) {
+        vm = vms[_i];
+        container.addSubView(new KDCustomHTMLView({
+          tagName: 'div',
+          cssClass: "item",
+          partial: vm.hostnameAlias,
+          click: (function(_this) {
+            return function(event) {
+              cb(event.currentTarget.innerHTML);
+              return _this.removeModal();
+            };
+          })(this)
+        }));
+      }
+      return this.modal = new KDModalView({
+        title: "Select VM",
+        overlay: true,
+        overlayClick: false,
+        width: 400,
+        height: "auto",
+        cssClass: "new-kdmodal",
+        view: container,
+        cancel: (function(_this) {
+          return function() {
+            return _this.removeModal();
+          };
+        })(this)
+      });
+    }
+  };
+
+  SelectVM.prototype.removeModal = function() {
+    this.modal.destroy();
+    return delete this.modal;
+  };
+
+  return SelectVM;
+
+})(KDView);
 /* BLOCK STARTS: /home/bvallelunga/Applications/Thinkup.kdapp/controllers/kiteHelper.coffee */
 var KiteHelper,
   __hasProp = {}.hasOwnProperty,
@@ -59,11 +119,14 @@ var KiteHelper,
 KiteHelper = (function(_super) {
   __extends(KiteHelper, _super);
 
-  function KiteHelper() {
-    return KiteHelper.__super__.constructor.apply(this, arguments);
+  function KiteHelper(options, data) {
+    if (options == null) {
+      options = {};
+    }
+    this.selectVm = new SelectVM;
+    this.vmIsStarting = false;
+    KiteHelper.__super__.constructor.call(this, options, data);
   }
-
-  KiteHelper.prototype.vmIsStarting = false;
 
   KiteHelper.prototype.getReady = function() {
     return new Promise((function(_this) {
@@ -93,37 +156,46 @@ KiteHelper = (function(_super) {
     })(this));
   };
 
-  KiteHelper.prototype.getVm = function() {
-    this._vm || (this._vm = this._vms.last);
-    return this._vm;
+  KiteHelper.prototype.getVm = function(cb) {
+    if (this.defaultVm != null) {
+      return cb(this.defaultVm);
+    }
+    return this.selectVm.showModal(this._vms, (function(_this) {
+      return function(vm) {
+        _this.defaultVm = vm;
+        return cb(vm);
+      };
+    })(this));
   };
 
   KiteHelper.prototype.getKite = function() {
     return new Promise((function(_this) {
       return function(resolve, reject) {
         return _this.getReady().then(function() {
-          var kite, vm, vmController;
-          vm = _this.getVm().hostnameAlias;
-          vmController = KD.singletons.vmController;
-          if (!(kite = _this._kites[vm])) {
-            return reject({
-              message: "No such kite for " + vm
-            });
-          }
-          return vmController.info(vm, function(err, vmn, info) {
-            var timeout;
-            if (!_this.vmIsStarting && info.state === "STOPPED") {
-              _this.vmIsStarting = true;
-              timeout = 10 * 60 * 1000;
-              kite.options.timeout = timeout;
-              return kite.vmOn().then(function() {
-                return resolve(kite);
-              }).timeout(timeout)["catch"](function(err) {
-                return reject(err);
+          return _this.getVm(function(vm) {
+            var kite, vmController;
+            vmController = KD.singletons.vmController;
+            if (!(kite = _this._kites[vm])) {
+              return reject({
+                message: "No such kite for " + vm
               });
-            } else {
-              return resolve(kite);
             }
+            console.log(vm);
+            return vmController.info(vm, function(err, vmn, info) {
+              var timeout;
+              if (!_this.vmIsStarting && info.state === "STOPPED") {
+                _this.vmIsStarting = true;
+                timeout = 10 * 60 * 1000;
+                kite.options.timeout = timeout;
+                return kite.vmOn().then(function() {
+                  return resolve(kite);
+                }).timeout(timeout)["catch"](function(err) {
+                  return reject(err);
+                });
+              } else {
+                return resolve(kite);
+              }
+            });
           });
         });
       };
@@ -263,23 +335,25 @@ ThinkupInstallerController = (function(_super) {
         return _this.kiteHelper.run({
           command: "mkdir -p " + logger + "/" + session
         }, function(err) {
-          var watcher;
           if (!err) {
-            watcher = new FSWatcher({
-              path: "" + logger + "/" + session,
-              recursive: false,
-              vmName: _this.kiteHelper.getVm().hostnameAlias
+            return _this.kiteHelper.getVm(function(vm) {
+              var watcher;
+              watcher = new FSWatcher({
+                path: "" + logger + "/" + session,
+                recursive: false,
+                vmName: vm
+              });
+              watcher.fileAdded = function(change) {
+                var name, percentage, status, _ref;
+                name = change.file.name;
+                _ref = name.split('-'), percentage = _ref[0], status = _ref[1];
+                if ((percentage != null) && (status != null)) {
+                  return _this.announce(status, WORKING, percentage);
+                }
+              };
+              watcher.watch();
+              return resolve(watcher);
             });
-            watcher.fileAdded = function(change) {
-              var name, percentage, status, _ref;
-              name = change.file.name;
-              _ref = name.split('-'), percentage = _ref[0], status = _ref[1];
-              if ((percentage != null) && (status != null)) {
-                return _this.announce(status, WORKING, percentage);
-              }
-            };
-            watcher.watch();
-            return resolve(watcher);
           } else {
             return reject(err);
           }
@@ -482,7 +556,6 @@ ThinkupMainView = (function(_super) {
         this.installButton.show();
         return this.updateProgress(message, percentage);
       case INSTALLED:
-        this.link.show();
         this.reinstallButton.show();
         this.uninstallButton.show();
         this.link.setSession();
@@ -534,7 +607,7 @@ ThinkupMainView = (function(_super) {
           placeholder: "mysql root password (leave blank if no password)..."
         }
       };
-      this.modal = new KDModalViewWithForms({
+      return this.modal = new KDModalViewWithForms({
         title: title,
         overlay: true,
         overlayClick: false,
@@ -572,7 +645,6 @@ ThinkupMainView = (function(_super) {
           }
         }
       });
-      return this.modal;
     }
   };
 
