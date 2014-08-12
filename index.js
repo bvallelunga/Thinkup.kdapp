@@ -1,4 +1,4 @@
-/* Compiled by kdc on Tue Aug 12 2014 19:37:33 GMT+0000 (UTC) */
+/* Compiled by kdc on Tue Aug 12 2014 19:38:17 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -239,7 +239,6 @@ ThinkupInstallerController = (function(_super) {
           password: scripts[name].sudo ? password : null
         }, function(err, res) {
           var _ref;
-          console.log(err, res);
           watcher.stopWatching();
           if ((err != null) || res.exitStatus === !0) {
             if (((_ref = err.details) != null ? _ref.message : void 0) === "Permissiond denied. Wrong password") {
