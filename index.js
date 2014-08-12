@@ -1,4 +1,4 @@
-/* Compiled by kdc on Tue Aug 12 2014 18:23:34 GMT+0000 (UTC) */
+/* Compiled by kdc on Tue Aug 12 2014 18:38:27 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -184,7 +184,7 @@ ThinkupInstallerController = (function(_super) {
     }
     ThinkupInstallerController.__super__.constructor.call(this, options, data);
     this.kiteHelper = new KiteHelper;
-    this.kiteHelper.ready(this.bound("configureWatcher"));
+    this.kiteHelper.ready(this.bound("watcherDirectory"));
     this.registerSingleton("thinkupInstallerController", this, true);
   }
 
@@ -215,7 +215,7 @@ ThinkupInstallerController = (function(_super) {
   };
 
   ThinkupInstallerController.prototype.command = function(command, password, data) {
-    var name;
+    var name, session;
     switch (command) {
       case INSTALL:
         name = "install";
@@ -231,53 +231,67 @@ ThinkupInstallerController = (function(_super) {
     }
     this.lastCommand = command;
     this.announce("" + (this.namify(name)) + "ing " + appName + "...", null, 0);
-    this.watcher.watch();
-    console.log("curl -sL " + scripts[name].url + " | bash -s " + user + " " + logger + "/" + (getSession()) + "/ " + this.mysqlPassword + " > " + logger + "/" + name + ".out");
-    return this.kiteHelper.run({
-      command: "curl -sL " + scripts[name].url + " | bash -s " + user + " " + logger + "/" + (getSession()) + "/ " + this.mysqlPassword + " > " + logger + "/" + name + ".out",
-      password: scripts[name].sudo ? password : null
-    }, (function(_this) {
-      return function(err, res) {
-        var _ref;
-        console.log(err, res);
-        _this.watcher.stopWatching();
-        if ((err != null) || res.exitStatus === !0) {
-          if (((_ref = err.details) != null ? _ref.message : void 0) === "Permissiond denied. Wrong password") {
-            return _this.announce("Your password was incorrect, please try again", WRONG_PASSWORD);
+    session = getSession();
+    return this.configureWatcher(session).then((function(_this) {
+      return function(watcher) {
+        return _this.kiteHelper.run({
+          command: "curl -sL " + scripts[name].url + " | bash -s " + user + " " + logger + "/" + session + "/ " + _this.mysqlPassword + " > " + logger + "/" + name + ".out",
+          password: scripts[name].sudo ? password : null
+        }, function(err, res) {
+          var _ref;
+          console.log(err, res);
+          watcher.stopWatching();
+          if ((err != null) || res.exitStatus === !0) {
+            if (((_ref = err.details) != null ? _ref.message : void 0) === "Permissiond denied. Wrong password") {
+              return _this.announce("Your password was incorrect, please try again", WRONG_PASSWORD);
+            } else {
+              _this.announce("Failed to " + name + ", please try again", FAILED);
+              return console.error(err);
+            }
           } else {
-            _this.announce("Failed to " + name + ", please try again", FAILED);
-            return console.error(err);
+            return _this.init();
           }
-        } else {
-          return _this.init();
-        }
+        });
+      };
+    })(this))["catch"](function(err) {
+      return console.error(err);
+    });
+  };
+
+  ThinkupInstallerController.prototype.configureWatcher = function(session, cb) {
+    return new Promise((function(_this) {
+      return function(resolve, reject) {
+        return _this.kiteHelper.run({
+          command: "mkdir -p " + logger + "/" + session
+        }, function(err) {
+          var watcher;
+          if (!err) {
+            watcher = new FSWatcher({
+              path: "" + logger + "/" + session,
+              recursive: false
+            });
+            watcher.fileAdded = function(change) {
+              var name, percentage, status, _ref;
+              name = change.file.name;
+              _ref = name.split('-'), percentage = _ref[0], status = _ref[1];
+              if ((percentage != null) && (status != null)) {
+                return _this.announce(status, WORKING, percentage);
+              }
+            };
+            watcher.watch();
+            return resolve(watcher);
+          } else {
+            return reject(err);
+          }
+        });
       };
     })(this));
   };
 
-  ThinkupInstallerController.prototype.configureWatcher = function() {
+  ThinkupInstallerController.prototype.watcherDirectory = function() {
     return this.kiteHelper.run({
-      command: "mkdir -p " + logger
-    }, (function(_this) {
-      return function(err) {
-        if (!err) {
-          _this.watcher = new FSWatcher({
-            path: logger,
-            recursive: true
-          });
-          return _this.watcher.fileAdded = function(change) {
-            var name, percentage, status, _ref;
-            name = change.file.name;
-            _ref = name.split('-'), percentage = _ref[0], status = _ref[1];
-            if ((percentage != null) && (status != null)) {
-              return _this.announce(status, WORKING, percentage);
-            }
-          };
-        } else {
-          return console.error(err);
-        }
-      };
-    })(this));
+      command: "mkdir -p " + logger + "/"
+    });
   };
 
   ThinkupInstallerController.prototype.updateState = function(state) {

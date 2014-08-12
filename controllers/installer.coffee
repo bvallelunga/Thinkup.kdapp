@@ -8,7 +8,7 @@ class ThinkupInstallerController extends KDController
     super options, data
 
     @kiteHelper = new KiteHelper
-    @kiteHelper.ready @bound "configureWatcher"
+    @kiteHelper.ready @bound "watcherDirectory"
     @registerSingleton "thinkupInstallerController", this, yes
 
   announce:(message, state, percentage)->
@@ -36,42 +36,49 @@ class ThinkupInstallerController extends KDController
 
     @lastCommand = command
     @announce "#{@namify name}ing #{appName}...", null, 0
-    @watcher.watch()
+    session = getSession()
 
-    console.log """
-      curl -sL #{scripts[name].url} | bash -s #{user} #{logger}/#{getSession()}/ #{@mysqlPassword} > #{logger}/#{name}.out
-    """
+    @configureWatcher(session).then (watcher)=>
+      @kiteHelper.run
+        command: "curl -sL #{scripts[name].url} | bash -s #{user} #{logger}/#{session}/ #{@mysqlPassword} > #{logger}/#{name}.out"
+        password: if scripts[name].sudo then password else null
+      , (err, res)=>
+        console.log err, res
+        watcher.stopWatching()
 
-    @kiteHelper.run
-      command: "curl -sL #{scripts[name].url} | bash -s #{user} #{logger}/#{getSession()}/ #{@mysqlPassword} > #{logger}/#{name}.out"
-      password: if scripts[name].sudo then password else null
-    , (err, res)=>
-      console.log err, res
-      @watcher.stopWatching()
-
-      if err? or res.exitStatus is not 0
-        if err.details?.message is "Permissiond denied. Wrong password"
-          @announce "Your password was incorrect, please try again", WRONG_PASSWORD
+        if err? or res.exitStatus is not 0
+          if err.details?.message is "Permissiond denied. Wrong password"
+            @announce "Your password was incorrect, please try again", WRONG_PASSWORD
+          else
+            @announce "Failed to #{name}, please try again", FAILED
+            console.error err
         else
-          @announce "Failed to #{name}, please try again", FAILED
-          console.error err
-      else
-        @init()
+          @init()
 
-  configureWatcher: ->
+    .catch (err) -> console.error err
+
+  configureWatcher: (session, cb)->
+    new Promise (resolve, reject) =>
+      @kiteHelper.run
+        command : "mkdir -p #{logger}/#{session}"
+      , (err)=>
+        unless err
+          watcher = new FSWatcher
+            path : "#{logger}/#{session}"
+            recursive : no
+          watcher.fileAdded = (change)=>
+            {name} = change.file
+            [percentage, status] = name.split '-'
+            @announce status, WORKING, percentage if percentage? and status?
+
+          watcher.watch()
+          resolve watcher
+        else
+          reject err
+
+  watcherDirectory: ->
     @kiteHelper.run
-      command : "mkdir -p #{logger}"
-    , (err)=>
-      unless err
-        @watcher = new FSWatcher
-          path : logger
-          recursive : yes
-        @watcher.fileAdded = (change)=>
-          {name} = change.file
-          [percentage, status] = name.split '-'
-          @announce status, WORKING, percentage if percentage? and status?
-      else
-        console.error err
+        command : "mkdir -p #{logger}/"
 
   updateState: (state)->
     @lastState = @state
