@@ -62,8 +62,6 @@ class ThinkupInstallerController extends KDController
       @kiteHelper.run
         command : "mkdir -p #{logger}/#{session}"
       , (err)=>
-        console.log @kiteHelper.getVm().hostnameAlias
-
         unless err
           watcher = new FSWatcher
             path : "#{logger}/#{session}"

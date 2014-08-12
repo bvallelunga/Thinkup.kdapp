@@ -1,4 +1,4 @@
-/* Compiled by kdc on Tue Aug 12 2014 19:33:55 GMT+0000 (UTC) */
+/* Compiled by kdc on Tue Aug 12 2014 19:37:33 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -265,7 +265,6 @@ ThinkupInstallerController = (function(_super) {
           command: "mkdir -p " + logger + "/" + session
         }, function(err) {
           var watcher;
-          console.log(_this.kiteHelper.getVm().hostnameAlias);
           if (!err) {
             watcher = new FSWatcher({
               path: "" + logger + "/" + session,
