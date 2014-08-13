@@ -1,17 +1,19 @@
-/* Compiled by kdc on Wed Aug 13 2014 01:33:26 GMT+0000 (UTC) */
+/* Compiled by kdc on Wed Aug 13 2014 22:04:17 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
   var appView = window.appPreview
 }
 /* BLOCK STARTS: /home/bvallelunga/Applications/Thinkup.kdapp/config.coffee */
-var ABORT, FAILED, INSTALL, INSTALLED, NOT_INSTALLED, REINSTALL, UNINSTALL, WORKING, WRONG_PASSWORD, app, appName, configureURL, configuredChecker, description, domain, getSession, github, installChecker, launchURL, logger, logo, scripts, user, _ref;
+var ABORT, FAILED, INSTALL, INSTALLED, NOT_INSTALLED, REINSTALL, UNINSTALL, WORKING, WRONG_PASSWORD, app, appName, configureURL, configuredChecker, description, domain, getSession, github, installChecker, launchURL, logger, logo, scripts, user, vmHostname, _ref;
 
 _ref = [0, 1, 2, 3, 4, 5, 6, 7, 8], NOT_INSTALLED = _ref[0], INSTALLED = _ref[1], WORKING = _ref[2], FAILED = _ref[3], WRONG_PASSWORD = _ref[4], INSTALL = _ref[5], ABORT = _ref[6], REINSTALL = _ref[7], UNINSTALL = _ref[8];
 
 user = KD.nick();
 
 domain = "" + user + ".kd.io";
+
+vmHostname = "" + user + ".koding.kd.io";
 
 getSession = function() {
   return (Math.random() + 1).toString(36).substring(7);
@@ -72,7 +74,6 @@ SelectVm = (function(_super) {
   SelectVm.prototype.viewAppended = function() {
     return this.kiteHelper.getReady().then((function(_this) {
       return function() {
-        var vm, _i, _len, _ref, _results;
         _this.addSubView(_this.header = new KDCustomHTMLView({
           tagName: 'div',
           cssClass: 'header',
@@ -80,41 +81,49 @@ SelectVm = (function(_super) {
             return _this.toggleClass("active");
           }
         }));
-        _this.header.addSubView(new KDCustomHTMLView({
-          tagName: 'div',
-          cssClass: 'type',
-          partial: "VM"
-        }));
         _this.header.addSubView(_this.header.selected = new KDCustomHTMLView({
           tagName: 'div',
           cssClass: 'selected',
-          partial: _this.kiteHelper.getVm()
+          partial: _this.namify(_this.kiteHelper.getVm())
+        }));
+        _this.header.addSubView(new KDCustomHTMLView({
+          tagName: 'div',
+          cssClass: 'arrow'
         }));
         _this.addSubView(_this.selection = new KDCustomHTMLView({
           tagName: 'div',
           cssClass: 'selection'
         }));
-        _ref = _this.kiteHelper._vms;
-        _results = [];
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          vm = _ref[_i];
-          _results.push(_this.selection.addSubView(new KDCustomHTMLView({
+        return _this.kiteHelper.getVms().forEach(function(vm) {
+          var vmController, vmItem;
+          _this.selection.addSubView(vmItem = new KDCustomHTMLView({
             tagName: 'div',
-            cssClass: 'item',
-            partial: vm.hostnameAlias,
+            cssClass: "item",
+            partial: _this.namify(vm.hostnameAlias),
             click: function(event) {
-              var vmHostname;
-              vmHostname = event.currentTarget.innerHTML;
-              _this.header.selected.updatePartial(vmHostname);
-              _this.kiteHelper.setDefaultVm(vmHostname);
+              var hostname;
+              hostname = event.currentTarget.innerHTML;
+              _this.kiteHelper.setDefaultVm(_this.denamify(hostname));
               _this.installer.init();
+              _this.header.selected.updatePartial(hostname);
               return _this.unsetClass("active");
             }
-          })));
-        }
-        return _results;
+          }));
+          vmController = KD.singletons.vmController;
+          return vmController.info(vm.hostnameAlias, function(err, vmn, info) {
+            return vmItem.setClass(info.state.toLowerCase());
+          });
+        });
       };
     })(this));
+  };
+
+  SelectVm.prototype.namify = function(hostname) {
+    return hostname.split(".")[0];
+  };
+
+  SelectVm.prototype.denamify = function(vm) {
+    return "" + vm + "." + vmHostname;
   };
 
   return SelectVm;
@@ -171,12 +180,28 @@ KiteHelper = (function(_super) {
   };
 
   KiteHelper.prototype.setDefaultVm = function(vm) {
-    return this.defaultVm = vm;
+    this.defaultVm = vm;
+    this.vmIsStarting = false;
+    return this.getKite();
   };
 
   KiteHelper.prototype.getVm = function() {
     this.defaultVm || (this.defaultVm = this._vms.first.hostnameAlias);
     return this.defaultVm;
+  };
+
+  KiteHelper.prototype.getVms = function() {
+    return this._vms.sort((function(_this) {
+      return function(a, b) {
+        return _this.getVMNumber(a) > _this.getVMNumber(b);
+      };
+    })(this));
+  };
+
+  KiteHelper.prototype.getVMNumber = function(_arg) {
+    var hostnameAlias;
+    hostnameAlias = _arg.hostnameAlias;
+    return +(hostnameAlias.match(/\d+/)[0]);
   };
 
   KiteHelper.prototype.getKite = function() {
@@ -273,6 +298,23 @@ ThinkupInstallerController = (function(_super) {
     return this.emit("status-update", message, percentage);
   };
 
+  ThinkupInstallerController.prototype.error = function(err, message) {
+    var state;
+    message || (message = err.details.message || err.message);
+    state = FAILED;
+    switch (message) {
+      case "Permissiond denied. Wrong password":
+        message = "Your password was incorrect, please try again";
+        state = WRONG_PASSWORD;
+        break;
+      case "CPU limit reached":
+        message = "Please turn off one of your vms, to use another";
+        state = ABORT;
+    }
+    console.log(err);
+    return this.announce(message, state);
+  };
+
   ThinkupInstallerController.prototype.init = function() {
     this.announce("Getting vm state...", WORKING, 0);
     return this.kiteHelper.getKite().then((function(_this) {
@@ -287,19 +329,17 @@ ThinkupInstallerController = (function(_super) {
             return _this.announce("" + appName + " is installed", INSTALLED);
           }
         })["catch"](function(err) {
-          _this.announce("Failed to see if " + appName + " is installed", FAILED);
-          return console.error(err);
+          return _this.error(err);
         });
       };
     })(this))["catch"]((function(_this) {
       return function(err) {
-        _this.announce(err.message, ABORT);
-        return console.error(err);
+        return _this.error(err);
       };
     })(this));
   };
 
-  ThinkupInstallerController.prototype.command = function(command, password, data) {
+  ThinkupInstallerController.prototype.command = function(command, password, retry) {
     var name, session;
     switch (command) {
       case INSTALL:
@@ -323,15 +363,14 @@ ThinkupInstallerController = (function(_super) {
           command: "curl -sL " + scripts[name].url + " | bash -s " + user + " " + logger + "/" + session + "/ " + _this.mysqlPassword + " > " + logger + "/" + name + ".out",
           password: scripts[name].sudo ? password : null
         }, function(err, res) {
-          var _ref;
+          console.log(err, res);
           watcher.stopWatching();
-          if ((err != null) || res.exitStatus !== 0) {
-            if (((_ref = err.details) != null ? _ref.message : void 0) === "Permissiond denied. Wrong password") {
-              return _this.announce("Your password was incorrect, please try again", WRONG_PASSWORD);
-            } else {
-              _this.announce("Failed to " + name + ", please try again", FAILED);
-              return console.error(err);
-            }
+          if ((retry == null) && (err == null) && !res.stdout && !res.stderr) {
+            return _this.command(_this.lastCommand, password, true);
+          } else if ((err != null) || res.exitStatus !== 0) {
+            return _this.error(err || {
+              message: res.stderr
+            }, "Failed to " + name + " " + appName + ", please contact support if the issue continues");
           } else {
             return _this.init();
           }
@@ -339,8 +378,7 @@ ThinkupInstallerController = (function(_super) {
       };
     })(this))["catch"]((function(_this) {
       return function(err) {
-        _this.announce("Failed to configure watcher", FAILED);
-        return console.error(err);
+        return _this.error(err);
       };
     })(this));
   };
@@ -382,7 +420,7 @@ ThinkupInstallerController = (function(_super) {
     }, (function(_this) {
       return function(err) {
         if (err != null) {
-          return _this.announce(err.message, FAILED);
+          return _this.error(err);
         }
       };
     })(this));

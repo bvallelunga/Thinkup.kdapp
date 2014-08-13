@@ -40,8 +40,10 @@
   display: block;
 }
 .Thinkup-dropdown .header {
+  position: relative;
   cursor: pointer;
   border: solid 2px rgba(0, 0, 0, 0.1);
+  background: #fafafa;
   -webkit-transition: all 0.2s ease 0;
   -moz-transition: all, 0.2s, ease;
   -o-transition: all 0.2s ease 0;
@@ -58,20 +60,23 @@
 .Thinkup-dropdown .header:hover:active {
   border-color: #57a1e6;
 }
-.Thinkup-dropdown .header .type {
-  background: #ededed;
-  color: #333;
-  padding: 10px 8px;
-  font-weight: bold;
-  border-right: solid 1px #e0e0e0;
+.Thinkup-dropdown .header .selected {
+  padding: 10px 30px 10px 10px;
   display: inline;
   float: left;
 }
-.Thinkup-dropdown .header .selected {
-  background: #fafafa;
-  padding: 10px;
-  display: inline;
-  float: left;
+.Thinkup-dropdown .header .arrow {
+  position: absolute;
+  top: calc(50% - 4px);
+  right: 10px;
+  width: 0;
+  height: 0;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 7px solid rgba(0, 0, 0, 0.075);
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  border-radius: 4px;
 }
 .Thinkup-dropdown .selection {
   display: none;
@@ -94,6 +99,12 @@
 }
 .Thinkup-dropdown .selection .item:last-child {
   border: none;
+}
+.Thinkup-dropdown .selection .item.running {
+  color: #1AAF5D;
+}
+.Thinkup-dropdown .selection .item.stopped {
+  color: #C41A16;
 }
 .Thinkup-installer {
   position: relative;

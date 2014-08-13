@@ -30,10 +30,21 @@ class KiteHelper extends KDController
 
   setDefaultVm: (vm)->
     @defaultVm = vm
+    @vmIsStarting = false
+    @getKite()
 
   getVm: ->
     @defaultVm or= @_vms.first.hostnameAlias
     return @defaultVm
+
+  getVms: ->
+    return @_vms.sort (a,b)=>
+      @getVMNumber(a) > @getVMNumber(b)
+
+  # hostnameAlias comes in format 'vm-0.senthil.kd.io', this helper
+  # gets just the vm number
+  getVMNumber: ({hostnameAlias})->
+    return +(hostnameAlias.match(/\d+/)[0])
 
   getKite:->
     new Promise (resolve, reject)=>

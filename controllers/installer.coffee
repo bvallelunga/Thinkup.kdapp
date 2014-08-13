@@ -13,6 +13,21 @@ class ThinkupInstallerController extends KDController
     @updateState state if state?
     @emit "status-update", message, percentage
 
+  error: (err, message)->
+    message or= err.details.message or err.message
+    state = FAILED
+
+    switch message
+      when "Permissiond denied. Wrong password"
+        message = "Your password was incorrect, please try again"
+        state = WRONG_PASSWORD
+      when "CPU limit reached"
+        message = "Please turn off one of your vms, to use another"
+        state = ABORT
+
+    console.log err
+    @announce message, state
+
   init: ->
     @announce "Getting vm state...", WORKING, 0
 
@@ -26,13 +41,11 @@ class ThinkupInstallerController extends KDController
           else
             @announce "#{appName} is installed", INSTALLED
         .catch (err)=>
-            @announce "Failed to see if #{appName} is installed", FAILED
-            console.error err
+          @error err
     .catch (err)=>
-      @announce err.message, ABORT
-      console.error err
+      @error err
 
-  command: (command, password, data)->
+  command: (command, password, retry)->
     switch command
       when INSTALL then name = "install"
       when REINSTALL then name = "reinstall"
@@ -48,20 +61,19 @@ class ThinkupInstallerController extends KDController
         command: "curl -sL #{scripts[name].url} | bash -s #{user} #{logger}/#{session}/ #{@mysqlPassword} > #{logger}/#{name}.out"
         password: if scripts[name].sudo then password else null
       , (err, res)=>
+        console.log err, res
         watcher.stopWatching()
 
-        if err? or res.exitStatus != 0
-          if err.details?.message is "Permissiond denied. Wrong password"
-            @announce "Your password was incorrect, please try again", WRONG_PASSWORD
-          else
-            @announce "Failed to #{name}, please try again", FAILED
-            console.error err
+        # Usually script have some output. If no output, retry command
+        if not retry? and not err? and not res.stdout and not res.stderr
+          return @command @lastCommand, password, true
+        else if err? or res.exitStatus != 0
+          @error err or message: res.stderr, "Failed to #{name} #{appName}, please contact support if the issue continues"
         else
           @init()
 
     .catch (err) =>
-      @announce "Failed to configure watcher", FAILED
-      console.error err
+      @error err
 
   configureWatcher: (session, cb)->
     new Promise (resolve, reject) =>
@@ -87,7 +99,7 @@ class ThinkupInstallerController extends KDController
     @kiteHelper.run
         command : "mkdir -p #{logger}/"
     , (err)=>
-      @announce err.message, FAILED if err?
+      @error err if err?
 
   updateState: (state)->
     @lastState = @state

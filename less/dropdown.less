@@ -17,8 +17,10 @@
   }
 
   .header {
+    position: relative;
     cursor: pointer;
     border: solid 2px rgba(0, 0, 0, 0.1);
+    background: lighten(#ededed, 5%);
     .transition(all);
     .border-radius(3px);
     .clearfix();
@@ -31,19 +33,21 @@
       }
     }
 
-    .type {
-      background: #ededed;
-      color: #333;
-      padding: 10px 8px;
-      font-weight: bold;
-      border-right: solid 1px darken(#ededed, 5%);
+    .selected {
+      padding: 10px 30px 10px 10px;
       .float-left();
     }
 
-    .selected {
-      background: lighten(#ededed, 5%);
-      padding: 10px;
-      .float-left();
+    .arrow {
+      position: absolute;
+      top: calc(~"50% - 4px");
+      right: 10px;
+      width: 0;
+    	height: 0;
+    	border-left: 7px solid transparent;
+    	border-right: 7px solid transparent;
+    	border-top: 7px solid rgba(0, 0, 0, 0.075);
+    	.border-radius(4px);
     }
   }
 
@@ -68,6 +72,14 @@
 
       &:last-child {
         border: none;
+      }
+
+      &.running {
+        color: #1AAF5D;
+      }
+
+      &.stopped {
+        color: #C41A16;
       }
     }
   }

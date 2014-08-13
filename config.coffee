@@ -4,6 +4,7 @@ FAILED, WRONG_PASSWORD, INSTALL, ABORT
 REINSTALL, UNINSTALL]   = [0..8]
 user                    = KD.nick()
 domain                  = "#{user}.kd.io"
+vmHostname              = "#{user}.koding.kd.io"
 getSession              = -> (Math.random() + 1).toString(36).substring 7
 
 # Configure App Here
