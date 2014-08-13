@@ -1,4 +1,4 @@
-/* Compiled by kdc on Wed Aug 13 2014 22:46:46 GMT+0000 (UTC) */
+/* Compiled by kdc on Wed Aug 13 2014 23:08:26 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -130,7 +130,7 @@ SelectVm = (function(_super) {
         }));
         vmController = KD.singletons.vmController;
         return vmController.info(vm.hostnameAlias, function(err, vmn, info) {
-          return vmItem.setClass(info.state.toLowerCase());
+          return vmItem.setClass(info != null ? info.state.toLowerCase() : void 0);
         });
       };
     })(this));
@@ -191,12 +191,13 @@ KiteHelper = (function(_super) {
 
   KiteHelper.prototype.setDefaultVm = function(vm) {
     this.defaultVm = vm;
-    this.vmIsStarting = false;
-    return this.getKite();
+    return this.vmIsStarting = false;
   };
 
   KiteHelper.prototype.getVm = function() {
-    this.defaultVm || (this.defaultVm = this._vms.first.hostnameAlias);
+    if (this.defaultVm == null) {
+      this.defaultVm = this._vms.first.hostnameAlias;
+    }
     return this.defaultVm;
   };
 
@@ -308,9 +309,9 @@ ThinkupInstallerController = (function(_super) {
     return this.emit("status-update", message, percentage);
   };
 
-  ThinkupInstallerController.prototype.error = function(err, message) {
-    var state, _ref;
-    message || (message = ((_ref = err.details) != null ? _ref.message : void 0) || err.message);
+  ThinkupInstallerController.prototype.error = function(err, override) {
+    var message, state, _ref;
+    message = ((_ref = err.details) != null ? _ref.message : void 0) || err.message;
     state = FAILED;
     switch (message) {
       case "Permissiond denied. Wrong password":
@@ -318,15 +319,18 @@ ThinkupInstallerController = (function(_super) {
         state = WRONG_PASSWORD;
         break;
       case "CPU limit reached":
-        message = "Please turn off one of your vms, to use another";
+        message = "With your current plan, please turn off one of your vms to use another";
         state = ABORT;
+        break;
+      default:
+        message = override;
     }
     console.log(err);
     return this.announce(message, state);
   };
 
   ThinkupInstallerController.prototype.init = function() {
-    this.announce("Getting vm state...", WORKING, 0);
+    this.announce("Checking installer state...", WORKING, 100);
     return this.kiteHelper.getKite().then((function(_this) {
       return function(kite) {
         _this.watcherDirectory();
@@ -362,7 +366,9 @@ ThinkupInstallerController = (function(_super) {
         name = "uninstall";
         break;
       default:
-        return console.error("Command not registered.");
+        return this.error({
+          message: "Command not registered."
+        });
     }
     this.lastCommand = command;
     this.announce("" + (this.namify(name)) + "ing " + appName + "...", null, 0);
@@ -373,7 +379,6 @@ ThinkupInstallerController = (function(_super) {
           command: "curl -sL " + scripts[name].url + " | bash -s " + user + " " + logger + "/" + session + "/ " + _this.mysqlPassword + " > " + logger + "/" + name + ".out",
           password: scripts[name].sudo ? password : null
         }, function(err, res) {
-          console.log(err, res);
           watcher.stopWatching();
           if ((retry == null) && (err == null) && !res.stdout && !res.stderr) {
             return _this.command(_this.lastCommand, password, true);
@@ -510,8 +515,8 @@ ThinkupMainView = (function(_super) {
       tagName: 'div',
       cssClass: 'progress-container'
     }));
-    this.progress.updateBar = function(percentage, unit, status) {
-      if (percentage === 100) {
+    this.progress.updateBar = function(percentage, unit, status, override) {
+      if (percentage === 100 && !override) {
         this.loader.hide();
       } else {
         this.loader.show();
@@ -641,7 +646,7 @@ ThinkupMainView = (function(_super) {
         return this.updateProgress(message, percentage);
       case WORKING:
         this.installer.state = this.installer.lastState;
-        return this.updateProgress(message, percentage);
+        return this.updateProgress(message, percentage, true);
       case FAILED:
         this.installer.state = this.installer.lastState;
         return this.statusUpdate(message, percentage);
@@ -726,11 +731,11 @@ ThinkupMainView = (function(_super) {
     }
   };
 
-  ThinkupMainView.prototype.updateProgress = function(status, percentage) {
+  ThinkupMainView.prototype.updateProgress = function(status, percentage, override) {
     if (percentage == null) {
       percentage = 100;
     }
-    return this.progress.updateBar(percentage, '%', status);
+    return this.progress.updateBar(percentage, '%', status, override);
   };
 
   return ThinkupMainView;

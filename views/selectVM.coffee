@@ -58,4 +58,4 @@ class SelectVm extends KDView
 
       {vmController} = KD.singletons
       vmController.info vm.hostnameAlias, (err, vmn, info)=>
-        vmItem.setClass info.state.toLowerCase()
+        vmItem.setClass info?.state.toLowerCase()

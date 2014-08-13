@@ -31,10 +31,9 @@ class KiteHelper extends KDController
   setDefaultVm: (vm)->
     @defaultVm = vm
     @vmIsStarting = false
-    @getKite()
 
   getVm: ->
-    @defaultVm or= @_vms.first.hostnameAlias
+    @defaultVm ?= @_vms.first.hostnameAlias
     return @defaultVm
 
   getVms: ->

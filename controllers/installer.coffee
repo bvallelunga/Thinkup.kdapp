@@ -13,8 +13,8 @@ class ThinkupInstallerController extends KDController
     @updateState state if state?
     @emit "status-update", message, percentage
 
-  error: (err, message)->
-    message or= err.details?.message or err.message
+  error: (err, override)->
+    message = err.details?.message or err.message
     state = FAILED
 
     switch message
@@ -22,25 +22,26 @@ class ThinkupInstallerController extends KDController
         message = "Your password was incorrect, please try again"
         state = WRONG_PASSWORD
       when "CPU limit reached"
-        message = "Please turn off one of your vms, to use another"
+        message = "With your current plan, please turn off one of your vms to use another"
         state = ABORT
+      else
+        message = override
 
     console.log err
     @announce message, state
 
   init: ->
-    @announce "Getting vm state...", WORKING, 0
+    @announce "Checking installer state...", WORKING, 100
 
     @kiteHelper.getKite().then (kite)=>
       @watcherDirectory()
 
-      kite.fsExists(path: installChecker)
-        .then (state)=>
-          unless state
-            @announce "#{appName} not installed", NOT_INSTALLED
-          else
-            @announce "#{appName} is installed", INSTALLED
-        .catch (err)=>
+      kite.fsExists(path: installChecker).then (state)=>
+        unless state
+          @announce "#{appName} not installed", NOT_INSTALLED
+        else
+          @announce "#{appName} is installed", INSTALLED
+      .catch (err)=>
           @error err
     .catch (err)=>
       @error err
@@ -50,7 +51,7 @@ class ThinkupInstallerController extends KDController
       when INSTALL then name = "install"
       when REINSTALL then name = "reinstall"
       when UNINSTALL then name = "uninstall"
-      else return console.error "Command not registered."
+      else return @error message: "Command not registered."
 
     @lastCommand = command
     @announce "#{@namify name}ing #{appName}...", null, 0
@@ -61,7 +62,6 @@ class ThinkupInstallerController extends KDController
         command: "curl -sL #{scripts[name].url} | bash -s #{user} #{logger}/#{session}/ #{@mysqlPassword} > #{logger}/#{name}.out"
         password: if scripts[name].sudo then password else null
       , (err, res)=>
-        console.log err, res
         watcher.stopWatching()
 
         # Usually script have some output. If no output, retry command

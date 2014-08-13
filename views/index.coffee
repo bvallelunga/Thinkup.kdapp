@@ -34,8 +34,8 @@ class ThinkupMainView extends KDView
       tagName       : 'div'
       cssClass      : 'progress-container'
 
-    @progress.updateBar = (percentage, unit, status)->
-      if percentage is 100
+    @progress.updateBar = (percentage, unit, status, override)->
+      if percentage is 100 and not override
         @loader.hide()
       else
         @loader.show()
@@ -148,7 +148,7 @@ class ThinkupMainView extends KDView
         @updateProgress message, percentage
       when WORKING
         @installer.state = @installer.lastState
-        @updateProgress message, percentage
+        @updateProgress message, percentage, true
       when FAILED
         @installer.state = @installer.lastState
         @statusUpdate message, percentage
@@ -208,6 +208,6 @@ class ThinkupMainView extends KDView
               fields            : fields
 
 
-  updateProgress: (status, percentage)->
+  updateProgress: (status, percentage, override)->
     percentage ?= 100
-    @progress.updateBar percentage, '%', status
+    @progress.updateBar percentage, '%', status, override
