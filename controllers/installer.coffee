@@ -5,11 +5,9 @@ class ThinkupInstallerController extends KDController
     {thinkupInstallerController} = KD.singletons
     return thinkupInstallerController if thinkupInstallerController
 
-    super options, data
-
-    @kiteHelper = new KiteHelper
-    @kiteHelper.ready @bound "watcherDirectory"
+    @kiteHelper = options.kiteHelper
     @registerSingleton "thinkupInstallerController", this, yes
+    super options, data
 
   announce:(message, state, percentage)->
     @updateState state if state?
@@ -17,6 +15,8 @@ class ThinkupInstallerController extends KDController
 
   init: ->
     @kiteHelper.getKite().then (kite)=>
+      @watcherDirectory()
+
       kite.fsExists(path: installChecker)
         .then (state)=>
           unless state
@@ -26,6 +26,9 @@ class ThinkupInstallerController extends KDController
         .catch (err)=>
             @announce "Failed to see if #{appName} is installed", FAILED
             console.error err
+    .catch (err)=>
+      @announce "Failed to talk to vm", FAILED
+      console.error err
 
   command: (command, password, data)->
     switch command
@@ -54,7 +57,9 @@ class ThinkupInstallerController extends KDController
         else
           @init()
 
-    .catch (err) -> console.error err
+    .catch (err) =>
+      @announce "Failed to configure watcher", FAILED
+      console.error err
 
   configureWatcher: (session, cb)->
     new Promise (resolve, reject) =>
@@ -62,24 +67,25 @@ class ThinkupInstallerController extends KDController
         command : "mkdir -p #{logger}/#{session}"
       , (err)=>
         unless err
-          @kiteHelper.getVm (vm)=>
-            watcher = new FSWatcher
-              path : "#{logger}/#{session}"
-              recursive : no
-              vmName: vm
-            watcher.fileAdded = (change)=>
-              {name} = change.file
-              [percentage, status] = name.split '-'
-              @announce status, WORKING, percentage if percentage? and status?
+          watcher = new FSWatcher
+            path : "#{logger}/#{session}"
+            recursive : no
+            vmName: @kiteHelper.getVm()
+          watcher.fileAdded = (change)=>
+            {name} = change.file
+            [percentage, status] = name.split '-'
+            @announce status, WORKING, percentage if percentage? and status?
 
-            watcher.watch()
-            resolve watcher
+          watcher.watch()
+          resolve watcher
         else
           reject err
 
   watcherDirectory: ->
     @kiteHelper.run
         command : "mkdir -p #{logger}/"
+    , (err)=>
+      @announce "Failed to talk to vm", FAILED if err?
 
   updateState: (state)->
     @lastState = @state

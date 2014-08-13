@@ -29,6 +29,7 @@
     "less": [
       "./less/mixins.less",
       "./less/modal.less",
+      "./less/dropdown.less",
       "./less/style.less"
     ]
   },

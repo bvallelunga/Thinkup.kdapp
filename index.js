@@ -1,4 +1,4 @@
-/* Compiled by kdc on Tue Aug 12 2014 22:35:28 GMT+0000 (UTC) */
+/* Compiled by kdc on Wed Aug 13 2014 00:45:13 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -25,9 +25,9 @@ github = "https://rest.kd.io/bvallelunga/Thinkup.kdapp/master";
 
 logo = "" + github + "/resources/logo.png";
 
-launchURL = "https://" + domain + "/" + app + "/";
+launchURL = "/";
 
-configureURL = "https://" + domain + "/" + app + "/install";
+configureURL = "/install";
 
 installChecker = "/home/" + user + "/Web/" + app + "/";
 
@@ -52,63 +52,72 @@ scripts = {
 
 description = "<div class=\"center bold\">There are things Facebook & Twitter don't tell you.</div>\n</p>\n<p>\nThinkUp is a free, installable web application that gives you insights into your\nactivity on social networks, including Twitter, Facebook, Foursquare, and Google+.\nFind out more at <a href=\"http://thinkup.com\">http://thinkup.com</a>.\n</p>\n<p>\n<img src=\"" + github + "/resources/description.png\"/>\n</p>";
 /* BLOCK STARTS: /home/bvallelunga/Applications/Thinkup.kdapp/views/selectVM.coffee */
-var SelectVM,
+var SelectVm,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-SelectVM = (function(_super) {
-  __extends(SelectVM, _super);
+SelectVm = (function(_super) {
+  __extends(SelectVm, _super);
 
-  function SelectVM(options, data) {
+  function SelectVm(options, data) {
     if (options == null) {
       options = {};
     }
-    SelectVM.__super__.constructor.call(this, options, data);
+    this.kiteHelper = options.kiteHelper;
+    this.installer = options.installer;
+    options.cssClass = "" + appName + "-dropdown";
+    SelectVm.__super__.constructor.call(this, options, data);
   }
 
-  SelectVM.prototype.showModal = function(vms, cb) {
-    var container, vm, _i, _len;
-    if (!this.modal) {
-      this.addSubView(container = new KDCustomHTMLView({
-        tagName: 'div'
-      }));
-      for (_i = 0, _len = vms.length; _i < _len; _i++) {
-        vm = vms[_i];
-        container.addSubView(new KDCustomHTMLView({
+  SelectVm.prototype.viewAppended = function() {
+    return this.kiteHelper.getReady().then((function(_this) {
+      return function() {
+        var vm, _i, _len, _ref, _results;
+        _this.addSubView(_this.header = new KDCustomHTMLView({
           tagName: 'div',
-          cssClass: "item",
-          partial: vm.hostnameAlias,
-          click: (function(_this) {
-            return function(event) {
-              cb(event.currentTarget.innerHTML);
-              return _this.removeModal();
-            };
-          })(this)
+          cssClass: 'header',
+          click: function() {
+            return _this.toggleClass("active");
+          }
         }));
-      }
-      return this.modal = new KDModalView({
-        title: "Select VM",
-        overlay: true,
-        overlayClick: false,
-        width: 400,
-        height: "auto",
-        cssClass: "new-kdmodal",
-        view: container,
-        cancel: (function(_this) {
-          return function() {
-            return _this.removeModal();
-          };
-        })(this)
-      });
-    }
+        _this.header.addSubView(new KDCustomHTMLView({
+          tagName: 'div',
+          cssClass: 'type',
+          partial: "VM"
+        }));
+        _this.header.addSubView(_this.header.selected = new KDCustomHTMLView({
+          tagName: 'div',
+          cssClass: 'selected',
+          partial: _this.kiteHelper.getVm()
+        }));
+        _this.addSubView(_this.selection = new KDCustomHTMLView({
+          tagName: 'div',
+          cssClass: 'selection'
+        }));
+        _ref = _this.kiteHelper._vms;
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          vm = _ref[_i];
+          _results.push(_this.selection.addSubView(new KDCustomHTMLView({
+            tagName: 'div',
+            cssClass: 'item',
+            partial: vm.hostnameAlias,
+            click: function(event) {
+              var vmHostname;
+              vmHostname = event.currentTarget.innerHTML;
+              _this.header.selected.updatePartial(vmHostname);
+              _this.kiteHelper.setDefaultVm(vmHostname);
+              _this.installer.init();
+              return _this.unsetClass("active");
+            }
+          })));
+        }
+        return _results;
+      };
+    })(this));
   };
 
-  SelectVM.prototype.removeModal = function() {
-    this.modal.destroy();
-    return delete this.modal;
-  };
-
-  return SelectVM;
+  return SelectVm;
 
 })(KDView);
 /* BLOCK STARTS: /home/bvallelunga/Applications/Thinkup.kdapp/controllers/kiteHelper.coffee */
@@ -120,11 +129,16 @@ KiteHelper = (function(_super) {
   __extends(KiteHelper, _super);
 
   function KiteHelper(options, data) {
+    var kiteHelperController;
     if (options == null) {
       options = {};
     }
-    this.selectVm = new SelectVM;
     this.vmIsStarting = false;
+    kiteHelperController = KD.singletons.kiteHelperController;
+    if (kiteHelperController) {
+      return kiteHelperController;
+    }
+    this.registerSingleton("kiteHelperController", this, true);
     KiteHelper.__super__.constructor.call(this, options, data);
   }
 
@@ -156,46 +170,41 @@ KiteHelper = (function(_super) {
     })(this));
   };
 
-  KiteHelper.prototype.getVm = function(cb) {
-    if (this.defaultVm != null) {
-      return cb(this.defaultVm);
-    }
-    return this.selectVm.showModal(this._vms, (function(_this) {
-      return function(vm) {
-        _this.defaultVm = vm;
-        return cb(vm);
-      };
-    })(this));
+  KiteHelper.prototype.setDefaultVm = function(vm) {
+    return this.defaultVm = vm;
+  };
+
+  KiteHelper.prototype.getVm = function() {
+    this.defaultVm || (this.defaultVm = this._vms.first.hostnameAlias);
+    return this.defaultVm;
   };
 
   KiteHelper.prototype.getKite = function() {
     return new Promise((function(_this) {
       return function(resolve, reject) {
         return _this.getReady().then(function() {
-          return _this.getVm(function(vm) {
-            var kite, vmController;
-            vmController = KD.singletons.vmController;
-            if (!(kite = _this._kites[vm])) {
-              return reject({
-                message: "No such kite for " + vm
-              });
-            }
-            console.log(vm);
-            return vmController.info(vm, function(err, vmn, info) {
-              var timeout;
-              if (!_this.vmIsStarting && info.state === "STOPPED") {
-                _this.vmIsStarting = true;
-                timeout = 10 * 60 * 1000;
-                kite.options.timeout = timeout;
-                return kite.vmOn().then(function() {
-                  return resolve(kite);
-                }).timeout(timeout)["catch"](function(err) {
-                  return reject(err);
-                });
-              } else {
-                return resolve(kite);
-              }
+          var kite, vm, vmController;
+          vm = _this.getVm();
+          vmController = KD.singletons.vmController;
+          if (!(kite = _this._kites[vm])) {
+            return reject({
+              message: "No such kite for " + vm
             });
+          }
+          return vmController.info(vm, function(err, vmn, info) {
+            var timeout;
+            if (!_this.vmIsStarting && info.state === "STOPPED") {
+              _this.vmIsStarting = true;
+              timeout = 10 * 60 * 1000;
+              kite.options.timeout = timeout;
+              return kite.vmOn().then(function() {
+                return resolve(kite);
+              }).timeout(timeout)["catch"](function(err) {
+                return reject(err);
+              });
+            } else {
+              return resolve(kite);
+            }
           });
         });
       };
@@ -214,23 +223,21 @@ KiteHelper = (function(_super) {
         }
       })["catch"](function(err) {
         if (callback) {
-          return callback({
+          callback({
             message: "Failed to run " + options.command,
             details: err
           });
-        } else {
-          return console.error(err);
         }
+        return console.error(err);
       });
     })["catch"](function(err) {
       if (callback) {
-        return callback({
+        callback({
           message: "Failed to run " + options.command,
           details: err
         });
-      } else {
-        return console.error(err);
       }
+      return console.error(err);
     });
   };
 
@@ -254,10 +261,9 @@ ThinkupInstallerController = (function(_super) {
     if (thinkupInstallerController) {
       return thinkupInstallerController;
     }
-    ThinkupInstallerController.__super__.constructor.call(this, options, data);
-    this.kiteHelper = new KiteHelper;
-    this.kiteHelper.ready(this.bound("watcherDirectory"));
+    this.kiteHelper = options.kiteHelper;
     this.registerSingleton("thinkupInstallerController", this, true);
+    ThinkupInstallerController.__super__.constructor.call(this, options, data);
   }
 
   ThinkupInstallerController.prototype.announce = function(message, state, percentage) {
@@ -270,6 +276,7 @@ ThinkupInstallerController = (function(_super) {
   ThinkupInstallerController.prototype.init = function() {
     return this.kiteHelper.getKite().then((function(_this) {
       return function(kite) {
+        _this.watcherDirectory();
         return kite.fsExists({
           path: installChecker
         }).then(function(state) {
@@ -282,6 +289,11 @@ ThinkupInstallerController = (function(_super) {
           _this.announce("Failed to see if " + appName + " is installed", FAILED);
           return console.error(err);
         });
+      };
+    })(this))["catch"]((function(_this) {
+      return function(err) {
+        _this.announce("Failed to talk to vm", FAILED);
+        return console.error(err);
       };
     })(this));
   };
@@ -324,9 +336,12 @@ ThinkupInstallerController = (function(_super) {
           }
         });
       };
-    })(this))["catch"](function(err) {
-      return console.error(err);
-    });
+    })(this))["catch"]((function(_this) {
+      return function(err) {
+        _this.announce("Failed to configure watcher", FAILED);
+        return console.error(err);
+      };
+    })(this));
   };
 
   ThinkupInstallerController.prototype.configureWatcher = function(session, cb) {
@@ -335,25 +350,23 @@ ThinkupInstallerController = (function(_super) {
         return _this.kiteHelper.run({
           command: "mkdir -p " + logger + "/" + session
         }, function(err) {
+          var watcher;
           if (!err) {
-            return _this.kiteHelper.getVm(function(vm) {
-              var watcher;
-              watcher = new FSWatcher({
-                path: "" + logger + "/" + session,
-                recursive: false,
-                vmName: vm
-              });
-              watcher.fileAdded = function(change) {
-                var name, percentage, status, _ref;
-                name = change.file.name;
-                _ref = name.split('-'), percentage = _ref[0], status = _ref[1];
-                if ((percentage != null) && (status != null)) {
-                  return _this.announce(status, WORKING, percentage);
-                }
-              };
-              watcher.watch();
-              return resolve(watcher);
+            watcher = new FSWatcher({
+              path: "" + logger + "/" + session,
+              recursive: false,
+              vmName: _this.kiteHelper.getVm()
             });
+            watcher.fileAdded = function(change) {
+              var name, percentage, status, _ref;
+              name = change.file.name;
+              _ref = name.split('-'), percentage = _ref[0], status = _ref[1];
+              if ((percentage != null) && (status != null)) {
+                return _this.announce(status, WORKING, percentage);
+              }
+            };
+            watcher.watch();
+            return resolve(watcher);
           } else {
             return reject(err);
           }
@@ -365,7 +378,13 @@ ThinkupInstallerController = (function(_super) {
   ThinkupInstallerController.prototype.watcherDirectory = function() {
     return this.kiteHelper.run({
       command: "mkdir -p " + logger + "/"
-    });
+    }, (function(_this) {
+      return function(err) {
+        if (err != null) {
+          return _this.announce("Failed to talk to vm", FAILED);
+        }
+      };
+    })(this));
   };
 
   ThinkupInstallerController.prototype.updateState = function(state) {
@@ -409,12 +428,20 @@ ThinkupMainView = (function(_super) {
     if (options == null) {
       options = {};
     }
+    this.kiteHelper = new KiteHelper;
+    this.installer = new ThinkupInstallerController({
+      kiteHelper: this.kiteHelper
+    });
+    this.selectVm = new SelectVm({
+      kiteHelper: this.kiteHelper,
+      installer: this.installer
+    });
     options.cssClass = "" + appName + "-installer main-view";
-    this.Installer = new ThinkupInstallerController;
     ThinkupMainView.__super__.constructor.call(this, options, data);
   }
 
   ThinkupMainView.prototype.viewAppended = function() {
+    this.addSubView(this.selectVm);
     this.addSubView(this.container = new KDCustomHTMLView({
       tagName: 'div',
       cssClass: 'container'
@@ -460,7 +487,7 @@ ThinkupMainView = (function(_super) {
     }));
     this.link.setSession = (function(_this) {
       return function() {
-        return _this.Installer.isConfigured().then(function(configured) {
+        return _this.installer.isConfigured().then(function(configured) {
           var message, url;
           if (!configured) {
             url = configureURL;
@@ -469,12 +496,12 @@ ThinkupMainView = (function(_super) {
             url = launchURL;
             message = "Thinkup has been configured for a demo using these credentials:\n<br>\n<strong>Username:</strong> demo@koding.com\n<br>\n<strong>Password:</strong> demo1234\n<br>";
           }
+          url = "http://" + (_this.kiteHelper.getVm()) + url;
           _this.link.updatePartial("" + message + "\nClick here to launch " + appName + ":\n<a target='_blank' href='" + url + "'>" + url + "</a>");
           return _this.link.show();
         })["catch"](function(error) {
           console.error(error);
-          _this.link.updatePartial("Failed to check if " + appName + " is configured.");
-          return _this.link.show();
+          return _this.updateProgress("Failed to check if " + appName + " is configured.");
         });
       };
     })(this);
@@ -490,7 +517,7 @@ ThinkupMainView = (function(_super) {
           _this.installButton.showLoader();
           return _this.passwordModal(false, function(password, mysqlPassword) {
             if (password != null) {
-              return _this.Installer.command(INSTALL, password);
+              return _this.installer.command(INSTALL, password);
             }
           });
         };
@@ -504,7 +531,7 @@ ThinkupMainView = (function(_super) {
           _this.reinstallButton.showLoader();
           return _this.passwordModal(false, function(password) {
             if (password != null) {
-              return _this.Installer.command(REINSTALL, password);
+              return _this.installer.command(REINSTALL, password);
             }
           });
         };
@@ -518,7 +545,7 @@ ThinkupMainView = (function(_super) {
           _this.uninstallButton.showLoader();
           return _this.passwordModal(false, function(password) {
             if (password != null) {
-              return _this.Installer.command(UNINSTALL, password);
+              return _this.installer.command(UNINSTALL, password);
             }
           });
         };
@@ -530,8 +557,8 @@ ThinkupMainView = (function(_super) {
     }));
     return KD.utils.defer((function(_this) {
       return function() {
-        _this.Installer.on("status-update", _this.bound("statusUpdate"));
-        return _this.Installer.init();
+        _this.installer.on("status-update", _this.bound("statusUpdate"));
+        return _this.installer.init();
       };
     })(this));
   };
@@ -542,7 +569,7 @@ ThinkupMainView = (function(_super) {
       percentage = 100;
     }
     if (percentage === 100) {
-      if ((_ref = this.Installer.state) === NOT_INSTALLED || _ref === INSTALLED || _ref === FAILED) {
+      if ((_ref = this.installer.state) === NOT_INSTALLED || _ref === INSTALLED || _ref === FAILED) {
         _ref1 = [this.installButton, this.reinstallButton, this.uninstallButton];
         for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
           element = _ref1[_i];
@@ -550,7 +577,7 @@ ThinkupMainView = (function(_super) {
         }
       }
     }
-    switch (this.Installer.state) {
+    switch (this.installer.state) {
       case NOT_INSTALLED:
         this.link.hide();
         this.installButton.show();
@@ -562,17 +589,17 @@ ThinkupMainView = (function(_super) {
         return this.updateProgress(message, percentage);
       case WORKING:
         this.link.hide();
-        this.Installer.state = this.Installer.lastState;
+        this.installer.state = this.installer.lastState;
         return this.updateProgress(message, percentage);
       case FAILED:
-        this.Installer.state = this.Installer.lastState;
+        this.installer.state = this.installer.lastState;
         return this.statusUpdate(message, percentage);
       case WRONG_PASSWORD:
-        this.Installer.state = this.Installer.lastState;
+        this.installer.state = this.installer.lastState;
         return this.passwordModal(true, (function(_this) {
           return function(password) {
             if (password != null) {
-              return _this.Installer.command(_this.Installer.lastCommand, password);
+              return _this.installer.command(_this.installer.lastCommand, password);
             }
           };
         })(this));
@@ -627,7 +654,7 @@ ThinkupMainView = (function(_super) {
             return function(form) {
               _this.modal.destroy();
               delete _this.modal;
-              _this.Installer.mysqlPassword = form.mysqlPassword;
+              _this.installer.mysqlPassword = form.mysqlPassword;
               return cb(form.password);
             };
           })(this),
@@ -649,6 +676,9 @@ ThinkupMainView = (function(_super) {
   };
 
   ThinkupMainView.prototype.updateProgress = function(status, percentage) {
+    if (percentage == null) {
+      percentage = 100;
+    }
     return this.progress.updateBar(percentage, '%', status);
   };
 

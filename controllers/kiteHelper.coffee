@@ -1,8 +1,11 @@
 class KiteHelper extends KDController
 
   constructor:(options = {}, data)->
-    @selectVm = new SelectVM
     @vmIsStarting = false
+
+    {kiteHelperController} = KD.singletons
+    return kiteHelperController if kiteHelperController
+    @registerSingleton "kiteHelperController", this, yes
     super options, data
 
   getReady:->
@@ -25,25 +28,22 @@ class KiteHelper extends KDController
         @emit 'ready'
         resolve()
 
-  getVm: (cb)->
-    if @defaultVm?
-      return cb @defaultVm
+  setDefaultVm: (vm)->
+    @defaultVm = vm
 
-    @selectVm.showModal @_vms, (vm)=>
-      @defaultVm = vm
-      cb vm
+  getVm: ->
+    @defaultVm or= @_vms.first.hostnameAlias
+    return @defaultVm
 
   getKite:->
     new Promise (resolve, reject)=>
       @getReady().then =>
-        @getVm (vm)=>
+          vm = @getVm()
           {vmController} = KD.singletons
 
           unless kite = @_kites[vm]
             return reject
               message: "No such kite for #{vm}"
-
-          console.log vm
 
           vmController.info vm, (err, vmn, info)=>
             if not @vmIsStarting and info.state is "STOPPED"
@@ -71,12 +71,10 @@ class KiteHelper extends KDController
             callback
               message : "Failed to run #{options.command}"
               details : err
-          else
-            console.error err
+          console.error err
     .catch (err)->
       if callback
         callback
           message : "Failed to run #{options.command}"
           details : err
-      else
-        console.error err
+      console.error err

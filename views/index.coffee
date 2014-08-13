@@ -1,11 +1,21 @@
 class ThinkupMainView extends KDView
 
   constructor:(options = {}, data)->
+    @kiteHelper = new KiteHelper
+
+    @installer = new ThinkupInstallerController
+        kiteHelper: @kiteHelper
+
+    @selectVm = new SelectVm
+        kiteHelper: @kiteHelper
+        installer : @installer
+
     options.cssClass = "#{appName}-installer main-view"
-    @Installer = new ThinkupInstallerController
     super options, data
 
   viewAppended: ->
+    @addSubView @selectVm
+
     @addSubView @container = new KDCustomHTMLView
       tagName       : 'div'
       cssClass      : 'container'
@@ -48,32 +58,32 @@ class ThinkupMainView extends KDView
       cssClass : 'hidden running-link'
 
     @link.setSession = =>
-      @Installer.isConfigured()
-        .then (configured)=>
-          unless configured
-            url     = configureURL
-            message = "Please set the database to <strong>Thinkup</strong> when configuring the app.<br>"
-          else
-            url     = launchURL
-            message = """
-              Thinkup has been configured for a demo using these credentials:
-              <br>
-              <strong>Username:</strong> demo@koding.com
-              <br>
-              <strong>Password:</strong> demo1234
-              <br>
-            """
-
-          @link.updatePartial """
-            #{message}
-            Click here to launch #{appName}:
-            <a target='_blank' href='#{url}'>#{url}</a>
+      @installer.isConfigured().then (configured)=>
+        unless configured
+          url     = configureURL
+          message = "Please set the database to <strong>Thinkup</strong> when configuring the app.<br>"
+        else
+          url     = launchURL
+          message = """
+            Thinkup has been configured for a demo using these credentials:
+            <br>
+            <strong>Username:</strong> demo@koding.com
+            <br>
+            <strong>Password:</strong> demo1234
+            <br>
           """
-          @link.show()
-        .catch (error)=>
-          console.error error
-          @link.updatePartial "Failed to check if #{appName} is configured."
-          @link.show()
+
+        url = "http://#{@kiteHelper.getVm()}#{url}"
+
+        @link.updatePartial """
+          #{message}
+          Click here to launch #{appName}:
+          <a target='_blank' href='#{url}'>#{url}</a>
+        """
+        @link.show()
+      .catch (error)=>
+        console.error error
+        @updateProgress "Failed to check if #{appName} is configured."
 
     @container.addSubView @buttonContainer = new KDCustomHTMLView
       tagName       : 'div'
@@ -86,7 +96,7 @@ class ThinkupMainView extends KDView
         @installButton.showLoader()
         @passwordModal no, (password, mysqlPassword)=>
           if password?
-            @Installer.command INSTALL, password
+            @installer.command INSTALL, password
 
     @buttonContainer.addSubView @reinstallButton = new KDButtonView
       title         : "Reinstall"
@@ -95,7 +105,7 @@ class ThinkupMainView extends KDView
         @reinstallButton.showLoader()
         @passwordModal no, (password)=>
           if password?
-            @Installer.command REINSTALL, password
+            @installer.command REINSTALL, password
 
     @buttonContainer.addSubView @uninstallButton = new KDButtonView
       title         : "Uninstall"
@@ -104,26 +114,26 @@ class ThinkupMainView extends KDView
         @uninstallButton.showLoader()
         @passwordModal no, (password)=>
           if password?
-            @Installer.command UNINSTALL, password
+            @installer.command UNINSTALL, password
 
     @container.addSubView new KDCustomHTMLView
       cssClass : "description"
       partial  : description
 
     KD.utils.defer =>
-      @Installer.on "status-update", @bound "statusUpdate"
-      @Installer.init()
+      @installer.on "status-update", @bound "statusUpdate"
+      @installer.init()
 
   statusUpdate: (message, percentage)->
     percentage ?= 100
 
     if percentage is 100
-      if @Installer.state in [NOT_INSTALLED, INSTALLED, FAILED]
+      if @installer.state in [NOT_INSTALLED, INSTALLED, FAILED]
         element.hide() for element in [
           @installButton, @reinstallButton, @uninstallButton
         ]
 
-    switch @Installer.state
+    switch @installer.state
       when NOT_INSTALLED
         @link.hide()
         @installButton.show()
@@ -135,16 +145,16 @@ class ThinkupMainView extends KDView
         @updateProgress message, percentage
       when WORKING
         @link.hide()
-        @Installer.state = @Installer.lastState
+        @installer.state = @installer.lastState
         @updateProgress message, percentage
       when FAILED
-        @Installer.state = @Installer.lastState
+        @installer.state = @installer.lastState
         @statusUpdate message, percentage
       when WRONG_PASSWORD
-        @Installer.state = @Installer.lastState
+        @installer.state = @installer.lastState
         @passwordModal yes, (password)=>
           if password?
-            @Installer.command @Installer.lastCommand, password
+            @installer.command @installer.lastCommand, password
       else
         @updateProgress message, percentage
 
@@ -184,7 +194,7 @@ class ThinkupMainView extends KDView
           callback              : (form)=>
             @modal.destroy()
             delete @modal
-            @Installer.mysqlPassword = form.mysqlPassword
+            @installer.mysqlPassword = form.mysqlPassword
             cb form.password
           forms                 :
             "Koding Passwords"  :
@@ -197,4 +207,5 @@ class ThinkupMainView extends KDView
 
 
   updateProgress: (status, percentage)->
+    percentage ?= 100
     @progress.updateBar percentage, '%', status

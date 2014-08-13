@@ -23,6 +23,78 @@
 .new-kdmodal .item:hover:active {
   color: #106c3a;
 }
+.Thinkup-dropdown {
+  position: absolute;
+  top: 25px;
+  right: 15px;
+  width: initial;
+  height: initial;
+  overflow: visible;
+}
+.Thinkup-dropdown.active .header {
+  -webkit-border-radius: 3px 3px 0 0;
+  -moz-border-radius: 3px 3px 0 0;
+  border-radius: 3px 3px 0 0;
+}
+.Thinkup-dropdown.active .selection {
+  display: block;
+}
+.Thinkup-dropdown .header {
+  cursor: pointer;
+  border: solid 2px rgba(0, 0, 0, 0.1);
+  -webkit-transition: all 0.2s ease 0;
+  -moz-transition: all, 0.2s, ease;
+  -o-transition: all 0.2s ease 0;
+  transition: all 0.2s ease 0;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  border-radius: 3px;
+  overflow: hidden;
+  zoom: 1;
+}
+.Thinkup-dropdown .header:hover {
+  border-color: rgba(87, 161, 230, 0.8);
+}
+.Thinkup-dropdown .header:hover:active {
+  border-color: #57a1e6;
+}
+.Thinkup-dropdown .header .type {
+  background: #ededed;
+  color: #333;
+  padding: 10px 8px;
+  font-weight: bold;
+  border-right: solid 1px #e0e0e0;
+  display: inline;
+  float: left;
+}
+.Thinkup-dropdown .header .selected {
+  background: #fafafa;
+  padding: 10px;
+  display: inline;
+  float: left;
+}
+.Thinkup-dropdown .selection {
+  display: none;
+  border: solid 2px rgba(0, 0, 0, 0.1);
+  border-top: none;
+  -webkit-border-radius: 0 0 3px 3px;
+  -moz-border-radius: 0 0 3px 3px;
+  border-radius: 0 0 3px 3px;
+}
+.Thinkup-dropdown .selection .item {
+  cursor: pointer;
+  padding: 8px 10px;
+  border-bottom: solid 1px rgba(0, 0, 0, 0.05);
+}
+.Thinkup-dropdown .selection .item:hover {
+  background: rgba(87, 161, 230, 0.1);
+}
+.Thinkup-dropdown .selection .item:hover:active {
+  background: rgba(87, 161, 230, 0.15);
+}
+.Thinkup-dropdown .selection .item:last-child {
+  border: none;
+}
 .Thinkup-installer {
   width: 100%;
   height: 100%%;
