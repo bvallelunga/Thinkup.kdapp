@@ -1,7 +1,7 @@
 # DO NOT TOUCH
 [NOT_INSTALLED, INSTALLED, WORKING,
-FAILED, WRONG_PASSWORD, INSTALL,
-REINSTALL, UNINSTALL]   = [0..7]
+FAILED, WRONG_PASSWORD, INSTALL, ABORT
+REINSTALL, UNINSTALL]   = [0..8]
 user                    = KD.nick()
 domain                  = "#{user}.kd.io"
 getSession              = -> (Math.random() + 1).toString(36).substring 7

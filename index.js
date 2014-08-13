@@ -1,13 +1,13 @@
-/* Compiled by kdc on Wed Aug 13 2014 01:22:47 GMT+0000 (UTC) */
+/* Compiled by kdc on Wed Aug 13 2014 01:33:26 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
   var appView = window.appPreview
 }
 /* BLOCK STARTS: /home/bvallelunga/Applications/Thinkup.kdapp/config.coffee */
-var FAILED, INSTALL, INSTALLED, NOT_INSTALLED, REINSTALL, UNINSTALL, WORKING, WRONG_PASSWORD, app, appName, configureURL, configuredChecker, description, domain, getSession, github, installChecker, launchURL, logger, logo, scripts, user, _ref;
+var ABORT, FAILED, INSTALL, INSTALLED, NOT_INSTALLED, REINSTALL, UNINSTALL, WORKING, WRONG_PASSWORD, app, appName, configureURL, configuredChecker, description, domain, getSession, github, installChecker, launchURL, logger, logo, scripts, user, _ref;
 
-_ref = [0, 1, 2, 3, 4, 5, 6, 7], NOT_INSTALLED = _ref[0], INSTALLED = _ref[1], WORKING = _ref[2], FAILED = _ref[3], WRONG_PASSWORD = _ref[4], INSTALL = _ref[5], REINSTALL = _ref[6], UNINSTALL = _ref[7];
+_ref = [0, 1, 2, 3, 4, 5, 6, 7, 8], NOT_INSTALLED = _ref[0], INSTALLED = _ref[1], WORKING = _ref[2], FAILED = _ref[3], WRONG_PASSWORD = _ref[4], INSTALL = _ref[5], ABORT = _ref[6], REINSTALL = _ref[7], UNINSTALL = _ref[8];
 
 user = KD.nick();
 
@@ -293,7 +293,7 @@ ThinkupInstallerController = (function(_super) {
       };
     })(this))["catch"]((function(_this) {
       return function(err) {
-        _this.announce(err.message, FAILED);
+        _this.announce(err.message, ABORT);
         return console.error(err);
       };
     })(this));
@@ -569,31 +569,29 @@ ThinkupMainView = (function(_super) {
   };
 
   ThinkupMainView.prototype.statusUpdate = function(message, percentage) {
-    var element, _i, _len, _ref, _ref1;
+    var element, _i, _len, _ref;
     if (percentage == null) {
       percentage = 100;
     }
-    if (percentage === 100) {
-      if ((_ref = this.installer.state) === NOT_INSTALLED || _ref === INSTALLED || _ref === FAILED) {
-        _ref1 = [this.installButton, this.reinstallButton, this.uninstallButton];
-        for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-          element = _ref1[_i];
-          element.hide();
-        }
-      }
+    _ref = [this.installButton, this.reinstallButton, this.uninstallButton, this.link];
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      element = _ref[_i];
+      element.hide();
     }
     switch (this.installer.state) {
       case NOT_INSTALLED:
-        this.link.hide();
-        this.installButton.show();
+        if (percentage === 100) {
+          this.installButton.show();
+        }
         return this.updateProgress(message, percentage);
       case INSTALLED:
-        this.reinstallButton.show();
-        this.uninstallButton.show();
-        this.link.setSession();
+        if (percentage === 100) {
+          this.reinstallButton.show();
+          this.uninstallButton.show();
+          this.link.setSession();
+        }
         return this.updateProgress(message, percentage);
       case WORKING:
-        this.link.hide();
         this.installer.state = this.installer.lastState;
         return this.updateProgress(message, percentage);
       case FAILED:

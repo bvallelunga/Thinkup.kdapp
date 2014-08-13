@@ -29,7 +29,7 @@ class ThinkupInstallerController extends KDController
             @announce "Failed to see if #{appName} is installed", FAILED
             console.error err
     .catch (err)=>
-      @announce err.message, FAILED
+      @announce err.message, ABORT
       console.error err
 
   command: (command, password, data)->
