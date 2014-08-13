@@ -98,7 +98,7 @@
 .Thinkup-installer {
   position: relative;
   padding: 0;
-  margin: 55px;
+  margin: 55px 0 0;
   width: 100%;
   height: 100%%;
   overflow: auto;
