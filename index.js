@@ -1,4 +1,4 @@
-/* Compiled by kdc on Wed Aug 13 2014 00:51:58 GMT+0000 (UTC) */
+/* Compiled by kdc on Wed Aug 13 2014 00:53:37 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -25,9 +25,9 @@ github = "https://rest.kd.io/bvallelunga/Thinkup.kdapp/master";
 
 logo = "" + github + "/resources/logo.png";
 
-launchURL = "/";
+launchURL = "/thinkup";
 
-configureURL = "/install";
+configureURL = "/thinkup/install";
 
 installChecker = "/home/" + user + "/Web/" + app + "/";
 
