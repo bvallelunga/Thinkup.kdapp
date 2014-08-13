@@ -101,20 +101,24 @@
   height: 100%%;
   overflow: auto;
 }
-.Thinkup-installer .container {
+.Thinkup-installer .wrapper {
+  position: relative;
+}
+.Thinkup-installer .wrapper .container {
   width: 600px;
-  margin: 50px auto 20px auto;
+  margin: 0 auto;
+  padding: 50px 0 20px 0;
   overflow: visible;
 }
-.Thinkup-installer .container .progress-container {
+.Thinkup-installer .wrapper .container .progress-container {
   position: relative;
   width: 100%;
 }
-.Thinkup-installer .container .progress-container .title {
+.Thinkup-installer .wrapper .container .progress-container .title {
   padding: 10px 10px 10px 0;
   border-bottom: solid 2px #d4d4d4;
 }
-.Thinkup-installer .container .progress-container .bar {
+.Thinkup-installer .wrapper .container .progress-container .bar {
   position: absolute;
   width: 0%;
   height: 2px;
@@ -126,12 +130,12 @@
   -o-transition: all 0.2s ease 0;
   transition: all 0.2s ease 0;
 }
-.Thinkup-installer .container .progress-container .spinner {
+.Thinkup-installer .wrapper .container .progress-container .spinner {
   position: absolute;
   top: 8px;
   right: 0;
 }
-.Thinkup-installer .container .toggle-button {
+.Thinkup-installer .wrapper .container .toggle-button {
   position: absolute;
   top: 253px;
   left: 703px;
@@ -139,69 +143,69 @@
   height: 28px;
   width: 100px;
 }
-.Thinkup-installer .container .toggle-button > .button-title {
+.Thinkup-installer .wrapper .container .toggle-button > .button-title {
   font-size: 12px;
 }
-.Thinkup-installer .container .logo {
+.Thinkup-installer .wrapper .container .logo {
   width: 200px;
   left: 50%;
   position: relative;
   margin-left: -110px;
   margin-top: 20px;
 }
-.Thinkup-installer .container .button-container {
+.Thinkup-installer .wrapper .container .button-container {
   text-align: center;
 }
-.Thinkup-installer .container .button-container .button {
+.Thinkup-installer .wrapper .container .button-container .button {
   margin: 15px;
   height: 45px;
 }
-.Thinkup-installer .container .button-container .button span {
+.Thinkup-installer .wrapper .container .button-container .button span {
   line-height: normal;
 }
-.Thinkup-installer .container .description {
+.Thinkup-installer .wrapper .container .description {
   color: #333;
   font-size: 16px;
   line-height: 1.7em;
   color: #555;
   margin-top: 30px;
 }
-.Thinkup-installer .container .description p {
+.Thinkup-installer .wrapper .container .description p {
   padding: 10px 0;
 }
-.Thinkup-installer .container .description a {
+.Thinkup-installer .wrapper .container .description a {
   text-decoration: underline;
   color: black;
 }
-.Thinkup-installer .container .description b,
-.Thinkup-installer .container .description .bold {
+.Thinkup-installer .wrapper .container .description b,
+.Thinkup-installer .wrapper .container .description .bold {
   text-decoration: none;
   font-weight: bold;
 }
-.Thinkup-installer .container .description .center {
+.Thinkup-installer .wrapper .container .description .center {
   text-align: center;
 }
-.Thinkup-installer .container .description img {
+.Thinkup-installer .wrapper .container .description img {
   width: 100%;
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
   border-radius: 3px;
 }
-.Thinkup-installer .container .running-link {
+.Thinkup-installer .wrapper .container .running-link {
   text-align: center;
   padding: 12px 0;
   background: #eee;
   margin-bottom: 15px;
   line-height: 22px;
 }
-.Thinkup-installer .container .running-link strong {
+.Thinkup-installer .wrapper .container .running-link strong {
   font-weight: bold;
 }
-.Thinkup-installer .container .running-link a {
+.Thinkup-installer .wrapper .container .running-link a {
   text-decoration: none;
   color: blue;
   text-shadow: none;
 }
-.Thinkup-installer .container .picture {
+.Thinkup-installer .wrapper .container .picture {
   width: 800px;
 }

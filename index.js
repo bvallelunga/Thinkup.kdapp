@@ -1,4 +1,4 @@
-/* Compiled by kdc on Wed Aug 13 2014 01:16:33 GMT+0000 (UTC) */
+/* Compiled by kdc on Wed Aug 13 2014 01:22:47 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -442,11 +442,15 @@ ThinkupMainView = (function(_super) {
   }
 
   ThinkupMainView.prototype.viewAppended = function() {
-    this.addSubView(this.container = new KDCustomHTMLView({
+    this.addSubView(this.wrapper = new KDCustomHTMLView({
+      tagName: 'div',
+      cssClass: 'wrapper'
+    }));
+    this.wrapper.addSubView(this.selectVm);
+    this.wrapper.addSubView(this.container = new KDCustomHTMLView({
       tagName: 'div',
       cssClass: 'container'
     }));
-    this.container.addSubView(this.selectVm);
     this.container.addSubView(new KDCustomHTMLView({
       tagName: 'img',
       cssClass: 'logo',
