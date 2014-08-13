@@ -48,7 +48,7 @@ class ThinkupInstallerController extends KDController
       , (err, res)=>
         watcher.stopWatching()
 
-        if err? or res.exitStatus is not 0
+        if err? or res.exitStatus != 0
           if err.details?.message is "Permissiond denied. Wrong password"
             @announce "Your password was incorrect, please try again", WRONG_PASSWORD
           else
