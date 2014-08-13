@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 # Setup
 USER=$1
 OUT=$2
@@ -17,4 +15,4 @@ mkdir -p $OUT
 # Start Coding Here...
 touch $OUT/"50-Removing Thinkup"
 rm -rf /home/$USER/Web/thinkup
-eval "$MYSQL -e 'DROP DATABASE Thinkup'"
+eval "$MYSQL -e 'DROP DATABASE IF EXISTS Thinkup'"
