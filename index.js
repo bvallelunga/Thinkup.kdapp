@@ -1,4 +1,4 @@
-/* Compiled by kdc on Wed Aug 13 2014 00:53:37 GMT+0000 (UTC) */
+/* Compiled by kdc on Wed Aug 13 2014 01:06:56 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -292,7 +292,7 @@ ThinkupInstallerController = (function(_super) {
       };
     })(this))["catch"]((function(_this) {
       return function(err) {
-        _this.announce("Failed to talk to vm", FAILED);
+        _this.announce(err.message, FAILED);
         return console.error(err);
       };
     })(this));
@@ -381,7 +381,7 @@ ThinkupInstallerController = (function(_super) {
     }, (function(_this) {
       return function(err) {
         if (err != null) {
-          return _this.announce("Failed to talk to vm", FAILED);
+          return _this.announce(err.message, FAILED);
         }
       };
     })(this));

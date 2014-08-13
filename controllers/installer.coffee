@@ -27,7 +27,7 @@ class ThinkupInstallerController extends KDController
             @announce "Failed to see if #{appName} is installed", FAILED
             console.error err
     .catch (err)=>
-      @announce "Failed to talk to vm", FAILED
+      @announce err.message, FAILED
       console.error err
 
   command: (command, password, data)->
@@ -85,7 +85,7 @@ class ThinkupInstallerController extends KDController
     @kiteHelper.run
         command : "mkdir -p #{logger}/"
     , (err)=>
-      @announce "Failed to talk to vm", FAILED if err?
+      @announce err.message, FAILED if err?
 
   updateState: (state)->
     @lastState = @state
