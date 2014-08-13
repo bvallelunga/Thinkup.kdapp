@@ -14,11 +14,11 @@ class ThinkupMainView extends KDView
     super options, data
 
   viewAppended: ->
-    @addSubView @selectVm
-
     @addSubView @container = new KDCustomHTMLView
       tagName       : 'div'
       cssClass      : 'container'
+
+    @container.addSubView @selectVm
 
     @container.addSubView new KDCustomHTMLView
       tagName       : 'img'
