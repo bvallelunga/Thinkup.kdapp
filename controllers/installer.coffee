@@ -14,7 +14,7 @@ class ThinkupInstallerController extends KDController
     @emit "status-update", message, percentage
 
   error: (err, message)->
-    message or= err.details.message or err.message
+    message or= err.details?.message or err.message
     state = FAILED
 
     switch message

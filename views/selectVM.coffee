@@ -27,24 +27,35 @@ class SelectVm extends KDView
         tagName       : 'div'
         cssClass      : 'selection'
 
-      @kiteHelper.getVms().forEach (vm)=>
-        @selection.addSubView vmItem = new KDCustomHTMLView
-          tagName       : 'div'
-          cssClass      : "item"
-          partial       : @namify(vm.hostnameAlias)
-          click         : (event)=>
-            hostname = event.currentTarget.innerHTML
-            @kiteHelper.setDefaultVm @denamify(hostname)
-            @installer.init()
-            @header.selected.updatePartial hostname
-            @unsetClass "active"
-
-        {vmController} = KD.singletons
-        vmController.info vm.hostnameAlias, (err, vmn, info)=>
-          vmItem.setClass info.state.toLowerCase()
+      @updateVms()
 
   namify: (hostname)->
     return hostname.split(".")[0]
 
-  denamify: (vm)->
-    return "#{vm}.#{vmHostname}"
+  updateVms: ->
+    @selection.updatePartial ""
+
+    @kiteHelper.getVms().forEach (vm)=>
+      @selection.addSubView vmItem = new KDCustomHTMLView
+        tagName       : 'div'
+        cssClass      : "item"
+        click         : =>
+          @kiteHelper.setDefaultVm vm.hostnameAlias
+          @installer.init()
+          @header.selected.updatePartial @namify(vm.hostnameAlias)
+          @unsetClass "active"
+
+          KD.utils.wait 2000, @bound "updateVms"
+
+      vmItem.addSubView new KDCustomHTMLView
+        tagName       : 'span'
+        cssClass      : "bubble"
+
+      vmItem.addSubView new KDCustomHTMLView
+        tagName       : 'span'
+        cssClass      : "name"
+        partial       : @namify(vm.hostnameAlias)
+
+      {vmController} = KD.singletons
+      vmController.info vm.hostnameAlias, (err, vmn, info)=>
+        vmItem.setClass info.state.toLowerCase()

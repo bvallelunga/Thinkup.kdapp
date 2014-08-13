@@ -1,4 +1,4 @@
-/* Compiled by kdc on Wed Aug 13 2014 22:04:17 GMT+0000 (UTC) */
+/* Compiled by kdc on Wed Aug 13 2014 22:46:46 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -94,26 +94,7 @@ SelectVm = (function(_super) {
           tagName: 'div',
           cssClass: 'selection'
         }));
-        return _this.kiteHelper.getVms().forEach(function(vm) {
-          var vmController, vmItem;
-          _this.selection.addSubView(vmItem = new KDCustomHTMLView({
-            tagName: 'div',
-            cssClass: "item",
-            partial: _this.namify(vm.hostnameAlias),
-            click: function(event) {
-              var hostname;
-              hostname = event.currentTarget.innerHTML;
-              _this.kiteHelper.setDefaultVm(_this.denamify(hostname));
-              _this.installer.init();
-              _this.header.selected.updatePartial(hostname);
-              return _this.unsetClass("active");
-            }
-          }));
-          vmController = KD.singletons.vmController;
-          return vmController.info(vm.hostnameAlias, function(err, vmn, info) {
-            return vmItem.setClass(info.state.toLowerCase());
-          });
-        });
+        return _this.updateVms();
       };
     })(this));
   };
@@ -122,8 +103,37 @@ SelectVm = (function(_super) {
     return hostname.split(".")[0];
   };
 
-  SelectVm.prototype.denamify = function(vm) {
-    return "" + vm + "." + vmHostname;
+  SelectVm.prototype.updateVms = function() {
+    this.selection.updatePartial("");
+    return this.kiteHelper.getVms().forEach((function(_this) {
+      return function(vm) {
+        var vmController, vmItem;
+        _this.selection.addSubView(vmItem = new KDCustomHTMLView({
+          tagName: 'div',
+          cssClass: "item",
+          click: function() {
+            _this.kiteHelper.setDefaultVm(vm.hostnameAlias);
+            _this.installer.init();
+            _this.header.selected.updatePartial(_this.namify(vm.hostnameAlias));
+            _this.unsetClass("active");
+            return KD.utils.wait(2000, _this.bound("updateVms"));
+          }
+        }));
+        vmItem.addSubView(new KDCustomHTMLView({
+          tagName: 'span',
+          cssClass: "bubble"
+        }));
+        vmItem.addSubView(new KDCustomHTMLView({
+          tagName: 'span',
+          cssClass: "name",
+          partial: _this.namify(vm.hostnameAlias)
+        }));
+        vmController = KD.singletons.vmController;
+        return vmController.info(vm.hostnameAlias, function(err, vmn, info) {
+          return vmItem.setClass(info.state.toLowerCase());
+        });
+      };
+    })(this));
   };
 
   return SelectVm;
@@ -299,8 +309,8 @@ ThinkupInstallerController = (function(_super) {
   };
 
   ThinkupInstallerController.prototype.error = function(err, message) {
-    var state;
-    message || (message = err.details.message || err.message);
+    var state, _ref;
+    message || (message = ((_ref = err.details) != null ? _ref.message : void 0) || err.message);
     state = FAILED;
     switch (message) {
       case "Permissiond denied. Wrong password":
