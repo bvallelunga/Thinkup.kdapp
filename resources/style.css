@@ -220,9 +220,14 @@
 .Thinkup-installer .wrapper .container .running-link {
   text-align: center;
   padding: 12px 0;
-  background: #eee;
+  background: #FCFCFC;
   margin-bottom: 15px;
   line-height: 22px;
+  border: solid 1px #efefef;
+  border-top: none;
+  -webkit-border-radius: 0 0 4px 4px;
+  -moz-border-radius: 0 0 4px 4px;
+  border-radius: 0 0 4px 4px;
 }
 .Thinkup-installer .wrapper .container .running-link strong {
   font-weight: bold;
