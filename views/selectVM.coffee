@@ -12,23 +12,13 @@ class SelectVm extends KDView
       @addSubView @header = new KDCustomHTMLView
         tagName       : 'div'
         cssClass      : 'header'
-        click         : =>
-          if !@hasClass "disabled"
-            @toggleClass "active"
-            @updateList()
-
-      @header.addSubView @header.selected = new KDCustomHTMLView
-        tagName       : 'div'
-        cssClass      : 'selected'
         partial       : @namify(@kiteHelper.getVm())
-
-      @header.addSubView new KDCustomHTMLView
-        tagName       : 'div'
-        cssClass      : 'arrow'
 
       @addSubView @selection = new KDCustomHTMLView
         tagName       : 'div'
         cssClass      : 'selection'
+
+      @updateList()
 
   namify: (hostname)->
     return hostname.split(".")[0]
@@ -42,8 +32,10 @@ class SelectVm extends KDView
         tagName       : 'div'
         cssClass      : "item"
         click         : =>
-          @chooseVm vm.hostnameAlias
-          @unsetClass "active"
+          @chooseVm vm.hostnameAlias if !@hasClass "disabled"
+
+      if vm.hostnameAlias is @kiteHelper.getVm()
+        vmItem.setClass "active"
 
       vmItem.addSubView new KDCustomHTMLView
         tagName       : 'span'
@@ -60,14 +52,17 @@ class SelectVm extends KDView
   chooseVm: (vm)->
     @kiteHelper.setDefaultVm vm
     @installer.init()
-    @header.selected.updatePartial @namify vm
+    @header.updatePartial @namify vm
+    @updateList()
 
   turnOffVm: (vm)->
     @installer.announce "Please wait while we turn off #{@namify vm}...", WORKING, 0
 
     @kiteHelper.turnOffVm(vm).then =>
       # Wait for Koding to register other vm is off
-      KD.utils.wait 10000, @installer.bound "init"
+      KD.utils.wait 10000, =>
+        @installer.init()
+        @updateList()
     .catch (err)=>
       @installer.error err
 

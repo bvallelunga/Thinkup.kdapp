@@ -1,4 +1,4 @@
-/* Compiled by kdc on Thu Aug 14 2014 20:21:55 GMT+0000 (UTC) */
+/* Compiled by kdc on Thu Aug 14 2014 22:47:16 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -77,26 +77,13 @@ SelectVm = (function(_super) {
         _this.addSubView(_this.header = new KDCustomHTMLView({
           tagName: 'div',
           cssClass: 'header',
-          click: function() {
-            if (!_this.hasClass("disabled")) {
-              _this.toggleClass("active");
-              return _this.updateList();
-            }
-          }
-        }));
-        _this.header.addSubView(_this.header.selected = new KDCustomHTMLView({
-          tagName: 'div',
-          cssClass: 'selected',
           partial: _this.namify(_this.kiteHelper.getVm())
         }));
-        _this.header.addSubView(new KDCustomHTMLView({
-          tagName: 'div',
-          cssClass: 'arrow'
-        }));
-        return _this.addSubView(_this.selection = new KDCustomHTMLView({
+        _this.addSubView(_this.selection = new KDCustomHTMLView({
           tagName: 'div',
           cssClass: 'selection'
         }));
+        return _this.updateList();
       };
     })(this));
   };
@@ -116,10 +103,14 @@ SelectVm = (function(_super) {
           tagName: 'div',
           cssClass: "item",
           click: function() {
-            _this.chooseVm(vm.hostnameAlias);
-            return _this.unsetClass("active");
+            if (!_this.hasClass("disabled")) {
+              return _this.chooseVm(vm.hostnameAlias);
+            }
           }
         }));
+        if (vm.hostnameAlias === _this.kiteHelper.getVm()) {
+          vmItem.setClass("active");
+        }
         vmItem.addSubView(new KDCustomHTMLView({
           tagName: 'span',
           cssClass: "bubble"
@@ -139,14 +130,18 @@ SelectVm = (function(_super) {
   SelectVm.prototype.chooseVm = function(vm) {
     this.kiteHelper.setDefaultVm(vm);
     this.installer.init();
-    return this.header.selected.updatePartial(this.namify(vm));
+    this.header.updatePartial(this.namify(vm));
+    return this.updateList();
   };
 
   SelectVm.prototype.turnOffVm = function(vm) {
     this.installer.announce("Please wait while we turn off " + (this.namify(vm)) + "...", WORKING, 0);
     return this.kiteHelper.turnOffVm(vm).then((function(_this) {
       return function() {
-        return KD.utils.wait(10000, _this.installer.bound("init"));
+        return KD.utils.wait(10000, function() {
+          _this.installer.init();
+          return _this.updateList();
+        });
       };
     })(this))["catch"]((function(_this) {
       return function(err) {
