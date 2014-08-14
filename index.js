@@ -1,4 +1,4 @@
-/* Compiled by kdc on Thu Aug 14 2014 19:38:46 GMT+0000 (UTC) */
+/* Compiled by kdc on Thu Aug 14 2014 20:21:55 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -168,7 +168,7 @@ SelectVm = (function(_super) {
           container.addSubView(vmItem = new KDCustomHTMLView({
             tagName: 'div',
             cssClass: "item",
-            partial: vm.hostnameAlias,
+            partial: "<div class=\"bubble\"></div>\n" + vm.hostnameAlias,
             click: function(event) {
               _this.turnOffVm(vm.hostnameAlias);
               return _this.removeModal();
@@ -699,7 +699,6 @@ ThinkupMainView = (function(_super) {
       cssClass: 'button green solid hidden',
       callback: (function(_this) {
         return function() {
-          _this.installButton.showLoader();
           return _this.passwordModal(false, function(password, mysqlPassword) {
             if (password != null) {
               return _this.installer.command(INSTALL, password);
@@ -713,7 +712,6 @@ ThinkupMainView = (function(_super) {
       cssClass: 'button solid hidden',
       callback: (function(_this) {
         return function() {
-          _this.reinstallButton.showLoader();
           return _this.passwordModal(false, function(password) {
             if (password != null) {
               return _this.installer.command(REINSTALL, password);
@@ -727,7 +725,6 @@ ThinkupMainView = (function(_super) {
       cssClass: 'button red solid hidden',
       callback: (function(_this) {
         return function() {
-          _this.uninstallButton.showLoader();
           return _this.passwordModal(false, function(password) {
             if (password != null) {
               return _this.installer.command(UNINSTALL, password);
@@ -781,7 +778,6 @@ ThinkupMainView = (function(_super) {
         this.installer.state = this.installer.lastState;
         return this.statusUpdate(message, percentage);
       case ABORT:
-        window.selectVm = this.selectVm;
         this.selectVm.turnOffVmModal();
         return this.updateProgress(message, percentage);
       case WRONG_PASSWORD:

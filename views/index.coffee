@@ -97,7 +97,6 @@ class ThinkupMainView extends KDView
       title         : "Install #{appName}"
       cssClass      : 'button green solid hidden'
       callback      : =>
-        @installButton.showLoader()
         @passwordModal no, (password, mysqlPassword)=>
           if password?
             @installer.command INSTALL, password
@@ -106,7 +105,6 @@ class ThinkupMainView extends KDView
       title         : "Reinstall"
       cssClass      : 'button solid hidden'
       callback      : =>
-        @reinstallButton.showLoader()
         @passwordModal no, (password)=>
           if password?
             @installer.command REINSTALL, password
@@ -115,7 +113,6 @@ class ThinkupMainView extends KDView
       title         : "Uninstall"
       cssClass      : 'button red solid hidden'
       callback      : =>
-        @uninstallButton.showLoader()
         @passwordModal no, (password)=>
           if password?
             @installer.command UNINSTALL, password
@@ -156,7 +153,6 @@ class ThinkupMainView extends KDView
         @installer.state = @installer.lastState
         @statusUpdate message, percentage
       when ABORT
-        window.selectVm = @selectVm
         @selectVm.turnOffVmModal()
         @updateProgress message, percentage
       when WRONG_PASSWORD

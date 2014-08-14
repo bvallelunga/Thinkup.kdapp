@@ -3,6 +3,7 @@ class SelectVm extends KDView
   constructor: (options = {}, data)->
     @kiteHelper = options.kiteHelper
     @installer = options.installer
+
     options.cssClass = "#{appName}-dropdown"
     super options, data
 
@@ -80,7 +81,10 @@ class SelectVm extends KDView
           container.addSubView vmItem = new KDCustomHTMLView
             tagName       : 'div'
             cssClass      : "item"
-            partial       : vm.hostnameAlias
+            partial       : """
+              <div class="bubble"></div>
+              #{vm.hostnameAlias}
+            """
             click         : (event)=>
               @turnOffVm vm.hostnameAlias
               @removeModal()
