@@ -12,8 +12,9 @@ class SelectVm extends KDView
         tagName       : 'div'
         cssClass      : 'header'
         click         : =>
-          @toggleClass "active"
-          @updateList()
+          if !@hasClass "disabled"
+            @toggleClass "active"
+            @updateList()
 
       @header.addSubView @header.selected = new KDCustomHTMLView
         tagName       : 'div'
@@ -61,7 +62,7 @@ class SelectVm extends KDView
     @header.selected.updatePartial @namify vm
 
   turnOffVm: (vm)->
-    @installer.announce "Please wait while we turn off #{@namify vm}...", WORKING
+    @installer.announce "Please wait while we turn off #{@namify vm}...", WORKING, 0
 
     @kiteHelper.turnOffVm(vm).then =>
       # Wait for Koding to register other vm is off
@@ -89,7 +90,7 @@ class SelectVm extends KDView
               vmItem.destroy()
 
         @modal = new KDModalView
-          title           : "Turn Off VM"
+          title           : "Choose VM To Turn Off"
           overlay         : yes
           overlayClick    : no
           width           : 400
@@ -101,3 +102,9 @@ class SelectVm extends KDView
   removeModal: ->
     @modal.destroy()
     delete @modal
+
+  disabled: (disabled)->
+    if disabled
+      @setClass "disabled"
+    else
+      @unsetClass "disabled"

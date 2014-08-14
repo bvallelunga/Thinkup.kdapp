@@ -53,18 +53,30 @@ class KiteHelper extends KDController
             message: "No such kite for #{vm}"
 
         kite.vmOff().then =>
-          @whenVmState vm, "STOPPED", -> resolve()
+          @whenVmState(vm, "STOPPED").then ->
+            resolve()
+          .catch reject
         .catch reject
       .catch reject
 
-  whenVmState: (vm, state, cb)->
-    {vmController} = KD.singletons
+  whenVmState: (vm, state)->
+    new Promise (resolve, reject)=>
+      {vmController} = KD.singletons
+      timeout = 10 * 60 * 1000
 
-    repeat = KD.utils.repeat 1000, =>
-      vmController.info vm, (err, vmn, info)=>
-        if info?.state is state
+      repeat = KD.utils.repeat 1000, =>
+        vmController.info vm, (err, vmn, info)=>
+          if info?.state is state
+            KD.utils.killRepeat repeat
+            KD.utils.killWait wait
+            resolve()
+
+      wait = KD.utils.wait timeout, =>
+        if repeat?
           KD.utils.killRepeat repeat
-          cb()
+          reject()
+
+
 
   getKite:->
     new Promise (resolve, reject)=>
@@ -83,9 +95,12 @@ class KiteHelper extends KDController
             kite.options.timeout = timeout
 
             kite.vmOn().then =>
-              @whenVmState vm, "RUNNING", =>
+              @whenVmState(vm, "RUNNING").then =>
                 @vmIsStarting = false
                 resolve kite
+              .catch (err)=>
+                @vmIsStarting = false
+                reject err
             .timeout(timeout)
             .catch (err)=>
               @vmIsStarting = false

@@ -139,14 +139,17 @@ class ThinkupMainView extends KDView
       when NOT_INSTALLED
         if percentage is 100
           @installButton.show()
+          @selectVm.disabled false
         @updateProgress message, percentage
       when INSTALLED
         if percentage is 100
           @reinstallButton.show()
           @uninstallButton.show()
           @link.setSession()
+          @selectVm.disabled false
         @updateProgress message, percentage
       when WORKING
+        @selectVm.disabled true
         @installer.state = @installer.lastState
         @updateProgress message, percentage, true
       when FAILED

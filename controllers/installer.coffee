@@ -22,7 +22,7 @@ class ThinkupInstallerController extends KDController
         message = "Your password was incorrect, please try again"
         state = WRONG_PASSWORD
       when "CPU limit reached"
-        message = "To use another vm with your plan, please turn off one of your vms from the right"
+        message = "To use another vm with your plan, please turn off one of your vms"
         state = ABORT
       else
         message = override
@@ -31,7 +31,7 @@ class ThinkupInstallerController extends KDController
     @announce message, state
 
   init: ->
-    @announce "Checking your vm's status...", WORKING, 100
+    @announce "Checking your vm's status...", WORKING, 0
     @kiteHelper.getKite().then (kite)=>
       @watcherDirectory()
 

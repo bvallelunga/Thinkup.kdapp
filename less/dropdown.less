@@ -6,24 +6,38 @@
   height: initial;
   overflow: visible;
 
-  &.active {
-    .header {
-      border-color: RGBA(87, 161, 230, 1);
-      .border-radius(3px 3px 0 0);
+  &.disabled {
+    opacity: 0.5;
+  }
 
-      .arrow {
-        .transform(rotate(-180deg));
+  &:not(.disabled) {
+    .header&:hover {
+      border-color: RGBA(87, 161, 230, 0.8);
+
+      &:active {
+        border-color: RGBA(87, 161, 230, 1);
       }
     }
 
-    .selection {
-      display: block;
+    &.active {
+      .header {
+        border-color: RGBA(87, 161, 230, 1);
+        .border-radius(3px 3px 0 0);
 
-      .item:hover {
-        background: RGBA(87, 161, 230, 0.1);
+        .arrow {
+          .transform(rotate(-180deg));
+        }
+      }
 
-        &:active {
-          background: RGBA(87, 161, 230, 0.15);
+      .selection {
+        display: block;
+
+        .item:hover {
+          background: RGBA(87, 161, 230, 0.1);
+
+          &:active {
+            background: RGBA(87, 161, 230, 0.15);
+          }
         }
       }
     }
@@ -37,14 +51,6 @@
     .transition(all);
     .border-radius(3px);
     .clearfix();
-
-    &:hover {
-      border-color: RGBA(87, 161, 230, 0.8);
-
-      &:active {
-        border-color: RGBA(87, 161, 230, 1);
-      }
-    }
 
     .selected {
       padding: 10px 30px 10px 10px;

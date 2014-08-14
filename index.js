@@ -1,4 +1,4 @@
-/* Compiled by kdc on Thu Aug 14 2014 19:11:52 GMT+0000 (UTC) */
+/* Compiled by kdc on Thu Aug 14 2014 19:38:46 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -78,8 +78,10 @@ SelectVm = (function(_super) {
           tagName: 'div',
           cssClass: 'header',
           click: function() {
-            _this.toggleClass("active");
-            return _this.updateList();
+            if (!_this.hasClass("disabled")) {
+              _this.toggleClass("active");
+              return _this.updateList();
+            }
           }
         }));
         _this.header.addSubView(_this.header.selected = new KDCustomHTMLView({
@@ -141,7 +143,7 @@ SelectVm = (function(_super) {
   };
 
   SelectVm.prototype.turnOffVm = function(vm) {
-    this.installer.announce("Please wait while we turn off " + (this.namify(vm)) + "...", WORKING);
+    this.installer.announce("Please wait while we turn off " + (this.namify(vm)) + "...", WORKING, 0);
     return this.kiteHelper.turnOffVm(vm).then((function(_this) {
       return function() {
         return KD.utils.wait(10000, _this.installer.bound("init"));
@@ -180,7 +182,7 @@ SelectVm = (function(_super) {
         };
       })(this));
       return this.modal = new KDModalView({
-        title: "Turn Off VM",
+        title: "Choose VM To Turn Off",
         overlay: true,
         overlayClick: false,
         width: 400,
@@ -199,6 +201,14 @@ SelectVm = (function(_super) {
   SelectVm.prototype.removeModal = function() {
     this.modal.destroy();
     return delete this.modal;
+  };
+
+  SelectVm.prototype.disabled = function(disabled) {
+    if (disabled) {
+      return this.setClass("disabled");
+    } else {
+      return this.unsetClass("disabled");
+    }
   };
 
   return SelectVm;
@@ -291,24 +301,34 @@ KiteHelper = (function(_super) {
             });
           }
           return kite.vmOff().then(function() {
-            return _this.whenVmState(vm, "STOPPED", function() {
+            return _this.whenVmState(vm, "STOPPED").then(function() {
               return resolve();
-            });
+            })["catch"](reject);
           })["catch"](reject);
         })["catch"](reject);
       };
     })(this));
   };
 
-  KiteHelper.prototype.whenVmState = function(vm, state, cb) {
-    var repeat, vmController;
-    vmController = KD.singletons.vmController;
-    return repeat = KD.utils.repeat(1000, (function(_this) {
-      return function() {
-        return vmController.info(vm, function(err, vmn, info) {
-          if ((info != null ? info.state : void 0) === state) {
+  KiteHelper.prototype.whenVmState = function(vm, state) {
+    return new Promise((function(_this) {
+      return function(resolve, reject) {
+        var repeat, timeout, vmController, wait;
+        vmController = KD.singletons.vmController;
+        timeout = 10 * 60 * 1000;
+        repeat = KD.utils.repeat(1000, function() {
+          return vmController.info(vm, function(err, vmn, info) {
+            if ((info != null ? info.state : void 0) === state) {
+              KD.utils.killRepeat(repeat);
+              KD.utils.killWait(wait);
+              return resolve();
+            }
+          });
+        });
+        return wait = KD.utils.wait(timeout, function() {
+          if (repeat != null) {
             KD.utils.killRepeat(repeat);
-            return cb();
+            return reject();
           }
         });
       };
@@ -334,9 +354,12 @@ KiteHelper = (function(_super) {
               timeout = 10 * 60 * 1000;
               kite.options.timeout = timeout;
               return kite.vmOn().then(function() {
-                return _this.whenVmState(vm, "RUNNING", function() {
+                return _this.whenVmState(vm, "RUNNING").then(function() {
                   _this.vmIsStarting = false;
                   return resolve(kite);
+                })["catch"](function(err) {
+                  _this.vmIsStarting = false;
+                  return reject(err);
                 });
               }).timeout(timeout)["catch"](function(err) {
                 _this.vmIsStarting = false;
@@ -423,7 +446,7 @@ ThinkupInstallerController = (function(_super) {
         state = WRONG_PASSWORD;
         break;
       case "CPU limit reached":
-        message = "To use another vm with your plan, please turn off one of your vms from the right";
+        message = "To use another vm with your plan, please turn off one of your vms";
         state = ABORT;
         break;
       default:
@@ -434,7 +457,7 @@ ThinkupInstallerController = (function(_super) {
   };
 
   ThinkupInstallerController.prototype.init = function() {
-    this.announce("Checking your vm's status...", WORKING, 100);
+    this.announce("Checking your vm's status...", WORKING, 0);
     return this.kiteHelper.getKite().then((function(_this) {
       return function(kite) {
         _this.watcherDirectory();
@@ -739,6 +762,7 @@ ThinkupMainView = (function(_super) {
       case NOT_INSTALLED:
         if (percentage === 100) {
           this.installButton.show();
+          this.selectVm.disabled(false);
         }
         return this.updateProgress(message, percentage);
       case INSTALLED:
@@ -746,9 +770,11 @@ ThinkupMainView = (function(_super) {
           this.reinstallButton.show();
           this.uninstallButton.show();
           this.link.setSession();
+          this.selectVm.disabled(false);
         }
         return this.updateProgress(message, percentage);
       case WORKING:
+        this.selectVm.disabled(true);
         this.installer.state = this.installer.lastState;
         return this.updateProgress(message, percentage, true);
       case FAILED:
