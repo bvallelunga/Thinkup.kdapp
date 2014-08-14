@@ -31,8 +31,7 @@ class ThinkupInstallerController extends KDController
     @announce message, state
 
   init: ->
-    @announce "Checking vm status...", WORKING, 100
-
+    @announce "Checking your vm's status...", WORKING, 100
     @kiteHelper.getKite().then (kite)=>
       @watcherDirectory()
 

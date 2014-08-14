@@ -12,7 +12,7 @@ class SelectVm extends KDView
         tagName       : 'div'
         cssClass      : 'header'
         click         : =>
-          @unsetClass "turnOff"
+          @toggleClass "active"
           @updateList()
 
       @header.addSubView @header.selected = new KDCustomHTMLView
@@ -31,23 +31,17 @@ class SelectVm extends KDView
   namify: (hostname)->
     return hostname.split(".")[0]
 
-  updateList: (mode="choose")->
-    @toggleClass mode
+  updateList: ->
     @selection.updatePartial ""
+    {vmController} = KD.singletons
 
     @kiteHelper.getVms().forEach (vm)=>
-      if mode is "choose" and vm.hostnameAlias is @kiteHelper.getVm()
-        return
-
       @selection.addSubView vmItem = new KDCustomHTMLView
         tagName       : 'div'
         cssClass      : "item"
         click         : =>
-          switch mode
-            when "choose" then @chooseVm vm.hostnameAlias
-            when "turnOff" then @turnOffVm vm.hostnameAlias
-
-          @unsetClass mode
+          @chooseVm vm.hostnameAlias
+          @unsetClass "active"
 
       vmItem.addSubView new KDCustomHTMLView
         tagName       : 'span'
@@ -58,11 +52,7 @@ class SelectVm extends KDView
         cssClass      : "name"
         partial       : @namify vm.hostnameAlias
 
-      {vmController} = KD.singletons
       vmController.info vm.hostnameAlias, (err, vmn, info)=>
-        if mode is "turnOff" and info?.state != "RUNNING"
-          vmItem.destroy()
-
         vmItem.setClass info?.state.toLowerCase()
 
   chooseVm: (vm)->
@@ -78,3 +68,36 @@ class SelectVm extends KDView
       KD.utils.wait 10000, @installer.bound "init"
     .catch (err)=>
       @installer.error err
+
+  turnOffVmModal: ->
+      unless @modal
+        {vmController} = KD.singletons
+        @addSubView container = new KDCustomHTMLView
+            tagName         : 'div'
+
+        @kiteHelper.getVms().forEach (vm)=>
+          container.addSubView vmItem = new KDCustomHTMLView
+            tagName       : 'div'
+            cssClass      : "item"
+            partial       : vm.hostnameAlias
+            click         : (event)=>
+              @turnOffVm vm.hostnameAlias
+              @removeModal()
+
+          vmController.info vm.hostnameAlias, (err, vmn, info)=>
+            if info?.state != "RUNNING"
+              vmItem.destroy()
+
+        @modal = new KDModalView
+          title           : "Turn Off VM"
+          overlay         : yes
+          overlayClick    : no
+          width           : 400
+          height          : "auto"
+          cssClass        : "new-kdmodal"
+          view            : container
+          cancel          : => @removeModal()
+
+  removeModal: ->
+    @modal.destroy()
+    delete @modal

@@ -1,4 +1,4 @@
-/* Compiled by kdc on Thu Aug 14 2014 01:23:21 GMT+0000 (UTC) */
+/* Compiled by kdc on Thu Aug 14 2014 19:11:52 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -78,7 +78,7 @@ SelectVm = (function(_super) {
           tagName: 'div',
           cssClass: 'header',
           click: function() {
-            _this.unsetClass("turnOff");
+            _this.toggleClass("active");
             return _this.updateList();
           }
         }));
@@ -103,30 +103,19 @@ SelectVm = (function(_super) {
     return hostname.split(".")[0];
   };
 
-  SelectVm.prototype.updateList = function(mode) {
-    if (mode == null) {
-      mode = "choose";
-    }
-    this.toggleClass(mode);
+  SelectVm.prototype.updateList = function() {
+    var vmController;
     this.selection.updatePartial("");
+    vmController = KD.singletons.vmController;
     return this.kiteHelper.getVms().forEach((function(_this) {
       return function(vm) {
-        var vmController, vmItem;
-        if (mode === "choose" && vm.hostnameAlias === _this.kiteHelper.getVm()) {
-          return;
-        }
+        var vmItem;
         _this.selection.addSubView(vmItem = new KDCustomHTMLView({
           tagName: 'div',
           cssClass: "item",
           click: function() {
-            switch (mode) {
-              case "choose":
-                _this.chooseVm(vm.hostnameAlias);
-                break;
-              case "turnOff":
-                _this.turnOffVm(vm.hostnameAlias);
-            }
-            return _this.unsetClass(mode);
+            _this.chooseVm(vm.hostnameAlias);
+            return _this.unsetClass("active");
           }
         }));
         vmItem.addSubView(new KDCustomHTMLView({
@@ -138,11 +127,7 @@ SelectVm = (function(_super) {
           cssClass: "name",
           partial: _this.namify(vm.hostnameAlias)
         }));
-        vmController = KD.singletons.vmController;
         return vmController.info(vm.hostnameAlias, function(err, vmn, info) {
-          if (mode === "turnOff" && (info != null ? info.state : void 0) !== "RUNNING") {
-            vmItem.destroy();
-          }
           return vmItem.setClass(info != null ? info.state.toLowerCase() : void 0);
         });
       };
@@ -166,6 +151,54 @@ SelectVm = (function(_super) {
         return _this.installer.error(err);
       };
     })(this));
+  };
+
+  SelectVm.prototype.turnOffVmModal = function() {
+    var container, vmController;
+    if (!this.modal) {
+      vmController = KD.singletons.vmController;
+      this.addSubView(container = new KDCustomHTMLView({
+        tagName: 'div'
+      }));
+      this.kiteHelper.getVms().forEach((function(_this) {
+        return function(vm) {
+          var vmItem;
+          container.addSubView(vmItem = new KDCustomHTMLView({
+            tagName: 'div',
+            cssClass: "item",
+            partial: vm.hostnameAlias,
+            click: function(event) {
+              _this.turnOffVm(vm.hostnameAlias);
+              return _this.removeModal();
+            }
+          }));
+          return vmController.info(vm.hostnameAlias, function(err, vmn, info) {
+            if ((info != null ? info.state : void 0) !== "RUNNING") {
+              return vmItem.destroy();
+            }
+          });
+        };
+      })(this));
+      return this.modal = new KDModalView({
+        title: "Turn Off VM",
+        overlay: true,
+        overlayClick: false,
+        width: 400,
+        height: "auto",
+        cssClass: "new-kdmodal",
+        view: container,
+        cancel: (function(_this) {
+          return function() {
+            return _this.removeModal();
+          };
+        })(this)
+      });
+    }
+  };
+
+  SelectVm.prototype.removeModal = function() {
+    this.modal.destroy();
+    return delete this.modal;
   };
 
   return SelectVm;
@@ -401,7 +434,7 @@ ThinkupInstallerController = (function(_super) {
   };
 
   ThinkupInstallerController.prototype.init = function() {
-    this.announce("Checking vm status...", WORKING, 100);
+    this.announce("Checking your vm's status...", WORKING, 100);
     return this.kiteHelper.getKite().then((function(_this) {
       return function(kite) {
         _this.watcherDirectory();
@@ -723,7 +756,7 @@ ThinkupMainView = (function(_super) {
         return this.statusUpdate(message, percentage);
       case ABORT:
         window.selectVm = this.selectVm;
-        this.selectVm.updateList("turnOff");
+        this.selectVm.turnOffVmModal();
         return this.updateProgress(message, percentage);
       case WRONG_PASSWORD:
         this.installer.state = this.installer.lastState;

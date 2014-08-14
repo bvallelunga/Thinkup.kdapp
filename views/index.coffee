@@ -154,7 +154,7 @@ class ThinkupMainView extends KDView
         @statusUpdate message, percentage
       when ABORT
         window.selectVm = @selectVm
-        @selectVm.updateList "turnOff"
+        @selectVm.turnOffVmModal()
         @updateProgress message, percentage
       when WRONG_PASSWORD
         @installer.state = @installer.lastState

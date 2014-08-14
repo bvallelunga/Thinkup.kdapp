@@ -6,8 +6,9 @@
   height: initial;
   overflow: visible;
 
-  &.choose, &.turnOff {
+  &.active {
     .header {
+      border-color: RGBA(87, 161, 230, 1);
       .border-radius(3px 3px 0 0);
 
       .arrow {
@@ -17,33 +18,13 @@
 
     .selection {
       display: block;
-    }
-  }
 
-  &.choose {
-    .header {
-      border-color: RGBA(87, 161, 230, 1);
-    }
+      .item:hover {
+        background: RGBA(87, 161, 230, 0.1);
 
-    .selection .item:hover {
-      background: RGBA(87, 161, 230, 0.1);
-
-      &:active {
-        background: RGBA(87, 161, 230, 0.15);
-      }
-    }
-  }
-
-  &.turnOff {
-    .header {
-      border-color: RGBA(232, 147, 153, 1);
-    }
-
-    .selection .item:hover {
-      background: RGBA(232, 147, 153, 0.1);
-
-      &:active {
-        background: RGBA(232, 147, 153, 0.15);
+        &:active {
+          background: RGBA(87, 161, 230, 0.15);
+        }
       }
     }
   }
