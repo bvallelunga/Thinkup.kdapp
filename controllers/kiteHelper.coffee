@@ -45,29 +45,53 @@ class KiteHelper extends KDController
   getVMNumber: ({hostnameAlias})->
     return +(hostnameAlias.match(/\d+/)[0])
 
+  turnOffVm: (vm)->
+    new Promise (resolve, reject)=>
+      @getReady().then =>
+        unless kite = @_kites[vm]
+          return reject
+            message: "No such kite for #{vm}"
+
+        kite.vmOff().then =>
+          @whenVmState vm, "STOPPED", -> resolve()
+        .catch reject
+      .catch reject
+
+  whenVmState: (vm, state, cb)->
+    {vmController} = KD.singletons
+
+    repeat = KD.utils.repeat 1000, =>
+      vmController.info vm, (err, vmn, info)=>
+        if info?.state is state
+          KD.utils.killRepeat repeat
+          cb()
+
   getKite:->
     new Promise (resolve, reject)=>
       @getReady().then =>
-          vm = @getVm()
-          {vmController} = KD.singletons
+        vm = @getVm()
+        {vmController} = KD.singletons
 
-          unless kite = @_kites[vm]
-            return reject
-              message: "No such kite for #{vm}"
+        unless kite = @_kites[vm]
+          return reject
+            message: "No such kite for #{vm}"
 
-          vmController.info vm, (err, vmn, info)=>
-            if not @vmIsStarting and info.state is "STOPPED"
-              @vmIsStarting = true
-              timeout = 10 * 60 * 1000
-              kite.options.timeout = timeout
+        vmController.info vm, (err, vmn, info)=>
+          if not @vmIsStarting and info.state is "STOPPED"
+            @vmIsStarting = true
+            timeout = 10 * 60 * 1000
+            kite.options.timeout = timeout
 
-              kite.vmOn().then ->
+            kite.vmOn().then =>
+              @whenVmState vm, "RUNNING", =>
+                @vmIsStarting = false
                 resolve kite
-              .timeout(timeout)
-              .catch (err)->
-                reject err
-            else
-              resolve kite
+            .timeout(timeout)
+            .catch (err)=>
+              @vmIsStarting = false
+              reject err
+          else
+            resolve kite
 
   run:(options, callback)->
     @getKite().then (kite)->

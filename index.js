@@ -1,4 +1,4 @@
-/* Compiled by kdc on Wed Aug 13 2014 23:08:26 GMT+0000 (UTC) */
+/* Compiled by kdc on Thu Aug 14 2014 00:51:49 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -78,7 +78,8 @@ SelectVm = (function(_super) {
           tagName: 'div',
           cssClass: 'header',
           click: function() {
-            return _this.toggleClass("active");
+            _this.unsetClass("turnOff");
+            return _this.updateList();
           }
         }));
         _this.header.addSubView(_this.header.selected = new KDCustomHTMLView({
@@ -90,11 +91,10 @@ SelectVm = (function(_super) {
           tagName: 'div',
           cssClass: 'arrow'
         }));
-        _this.addSubView(_this.selection = new KDCustomHTMLView({
+        return _this.addSubView(_this.selection = new KDCustomHTMLView({
           tagName: 'div',
           cssClass: 'selection'
         }));
-        return _this.updateVms();
       };
     })(this));
   };
@@ -103,7 +103,11 @@ SelectVm = (function(_super) {
     return hostname.split(".")[0];
   };
 
-  SelectVm.prototype.updateVms = function() {
+  SelectVm.prototype.updateList = function(mode) {
+    if (mode == null) {
+      mode = "choose";
+    }
+    this.toggleClass(mode);
     this.selection.updatePartial("");
     return this.kiteHelper.getVms().forEach((function(_this) {
       return function(vm) {
@@ -112,11 +116,14 @@ SelectVm = (function(_super) {
           tagName: 'div',
           cssClass: "item",
           click: function() {
-            _this.kiteHelper.setDefaultVm(vm.hostnameAlias);
-            _this.installer.init();
-            _this.header.selected.updatePartial(_this.namify(vm.hostnameAlias));
-            _this.unsetClass("active");
-            return KD.utils.wait(2000, _this.bound("updateVms"));
+            switch (mode) {
+              case "choose":
+                _this.chooseVm(vm.hostnameAlias);
+                break;
+              case "turnOff":
+                _this.turnOffVm(vm.hostnameAlias);
+            }
+            return _this.unsetClass(mode);
           }
         }));
         vmItem.addSubView(new KDCustomHTMLView({
@@ -132,6 +139,25 @@ SelectVm = (function(_super) {
         return vmController.info(vm.hostnameAlias, function(err, vmn, info) {
           return vmItem.setClass(info != null ? info.state.toLowerCase() : void 0);
         });
+      };
+    })(this));
+  };
+
+  SelectVm.prototype.chooseVm = function(vm) {
+    this.kiteHelper.setDefaultVm(vm);
+    this.installer.init();
+    return this.header.selected.updatePartial(this.namify(vm));
+  };
+
+  SelectVm.prototype.turnOffVm = function(vm) {
+    this.installer.announce("Please wait while w turn off " + (this.namify(vm)) + "...", WORKING);
+    return this.kiteHelper.turnOffVm(vm).then((function(_this) {
+      return function() {
+        return KD.utils.wait(10000, _this.installer.bound("init"));
+      };
+    })(this))["catch"]((function(_this) {
+      return function(err) {
+        return _this.installer.error(err);
       };
     })(this));
   };
@@ -215,6 +241,41 @@ KiteHelper = (function(_super) {
     return +(hostnameAlias.match(/\d+/)[0]);
   };
 
+  KiteHelper.prototype.turnOffVm = function(vm) {
+    return new Promise((function(_this) {
+      return function(resolve, reject) {
+        return _this.getReady().then(function() {
+          var kite;
+          if (!(kite = _this._kites[vm])) {
+            return reject({
+              message: "No such kite for " + vm
+            });
+          }
+          return kite.vmOff().then(function() {
+            return _this.whenVmState(vm, "STOPPED", function() {
+              return resolve();
+            });
+          })["catch"](reject);
+        })["catch"](reject);
+      };
+    })(this));
+  };
+
+  KiteHelper.prototype.whenVmState = function(vm, state, cb) {
+    var repeat, vmController;
+    vmController = KD.singletons.vmController;
+    return repeat = KD.utils.repeat(1000, (function(_this) {
+      return function() {
+        return vmController.info(vm, function(err, vmn, info) {
+          if ((info != null ? info.state : void 0) === state) {
+            KD.utils.killRepeat(repeat);
+            return cb();
+          }
+        });
+      };
+    })(this));
+  };
+
   KiteHelper.prototype.getKite = function() {
     return new Promise((function(_this) {
       return function(resolve, reject) {
@@ -234,8 +295,12 @@ KiteHelper = (function(_super) {
               timeout = 10 * 60 * 1000;
               kite.options.timeout = timeout;
               return kite.vmOn().then(function() {
-                return resolve(kite);
+                return _this.whenVmState(vm, "RUNNING", function() {
+                  _this.vmIsStarting = false;
+                  return resolve(kite);
+                });
               }).timeout(timeout)["catch"](function(err) {
+                _this.vmIsStarting = false;
                 return reject(err);
               });
             } else {
@@ -330,7 +395,7 @@ ThinkupInstallerController = (function(_super) {
   };
 
   ThinkupInstallerController.prototype.init = function() {
-    this.announce("Checking installer state...", WORKING, 100);
+    this.announce("Checking vm status...", WORKING, 100);
     return this.kiteHelper.getKite().then((function(_this) {
       return function(kite) {
         _this.watcherDirectory();
@@ -650,6 +715,10 @@ ThinkupMainView = (function(_super) {
       case FAILED:
         this.installer.state = this.installer.lastState;
         return this.statusUpdate(message, percentage);
+      case ABORT:
+        window.selectVm = this.selectVm;
+        this.selectVm.updateList("turnOff");
+        return this.updateProgress(message, percentage);
       case WRONG_PASSWORD:
         this.installer.state = this.installer.lastState;
         return this.passwordModal(true, (function(_this) {

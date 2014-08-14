@@ -152,6 +152,10 @@ class ThinkupMainView extends KDView
       when FAILED
         @installer.state = @installer.lastState
         @statusUpdate message, percentage
+      when ABORT
+        window.selectVm = @selectVm
+        @selectVm.updateList "turnOff"
+        @updateProgress message, percentage
       when WRONG_PASSWORD
         @installer.state = @installer.lastState
         @passwordModal yes, (password)=>
