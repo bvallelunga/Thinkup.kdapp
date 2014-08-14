@@ -1,4 +1,4 @@
-/* Compiled by kdc on Thu Aug 14 2014 01:04:53 GMT+0000 (UTC) */
+/* Compiled by kdc on Thu Aug 14 2014 01:11:50 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -153,7 +153,7 @@ SelectVm = (function(_super) {
   };
 
   SelectVm.prototype.turnOffVm = function(vm) {
-    this.installer.announce("Please wait while w turn off " + (this.namify(vm)) + "...", WORKING);
+    this.installer.announce("Please wait while we turn off " + (this.namify(vm)) + "...", WORKING);
     return this.kiteHelper.turnOffVm(vm).then((function(_this) {
       return function() {
         return KD.utils.wait(10000, _this.installer.bound("init"));
