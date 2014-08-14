@@ -36,6 +36,9 @@ class SelectVm extends KDView
     @selection.updatePartial ""
 
     @kiteHelper.getVms().forEach (vm)=>
+      if mode is "choose" and vm.hostnameAlias is @kiteHelper.getVm()
+        return
+
       @selection.addSubView vmItem = new KDCustomHTMLView
         tagName       : 'div'
         cssClass      : "item"

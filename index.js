@@ -1,4 +1,4 @@
-/* Compiled by kdc on Thu Aug 14 2014 01:11:50 GMT+0000 (UTC) */
+/* Compiled by kdc on Thu Aug 14 2014 01:23:21 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -112,6 +112,9 @@ SelectVm = (function(_super) {
     return this.kiteHelper.getVms().forEach((function(_this) {
       return function(vm) {
         var vmController, vmItem;
+        if (mode === "choose" && vm.hostnameAlias === _this.kiteHelper.getVm()) {
+          return;
+        }
         _this.selection.addSubView(vmItem = new KDCustomHTMLView({
           tagName: 'div',
           cssClass: "item",
