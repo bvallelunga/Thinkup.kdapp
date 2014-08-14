@@ -1,4 +1,4 @@
-/* Compiled by kdc on Thu Aug 14 2014 00:51:49 GMT+0000 (UTC) */
+/* Compiled by kdc on Thu Aug 14 2014 01:04:53 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -137,6 +137,9 @@ SelectVm = (function(_super) {
         }));
         vmController = KD.singletons.vmController;
         return vmController.info(vm.hostnameAlias, function(err, vmn, info) {
+          if (mode === "turnOff" && (info != null ? info.state : void 0) !== "RUNNING") {
+            vmItem.destroy();
+          }
           return vmItem.setClass(info != null ? info.state.toLowerCase() : void 0);
         });
       };
@@ -384,7 +387,7 @@ ThinkupInstallerController = (function(_super) {
         state = WRONG_PASSWORD;
         break;
       case "CPU limit reached":
-        message = "With your current plan, please turn off one of your vms to use another";
+        message = "To use another vm with your plan, please turn off one of your vms from the right";
         state = ABORT;
         break;
       default:

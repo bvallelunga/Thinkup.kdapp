@@ -22,7 +22,7 @@ class ThinkupInstallerController extends KDController
         message = "Your password was incorrect, please try again"
         state = WRONG_PASSWORD
       when "CPU limit reached"
-        message = "With your current plan, please turn off one of your vms to use another"
+        message = "To use another vm with your plan, please turn off one of your vms from the right"
         state = ABORT
       else
         message = override

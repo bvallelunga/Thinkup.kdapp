@@ -57,6 +57,9 @@ class SelectVm extends KDView
 
       {vmController} = KD.singletons
       vmController.info vm.hostnameAlias, (err, vmn, info)=>
+        if mode is "turnOff" and info?.state != "RUNNING"
+          vmItem.destroy()
+
         vmItem.setClass info?.state.toLowerCase()
 
   chooseVm: (vm)->
@@ -65,7 +68,7 @@ class SelectVm extends KDView
     @header.selected.updatePartial @namify vm
 
   turnOffVm: (vm)->
-    @installer.announce "Please wait while w turn off #{@namify vm}...", WORKING
+    @installer.announce "Please wait while we turn off #{@namify vm}...", WORKING
 
     @kiteHelper.turnOffVm(vm).then =>
       # Wait for Koding to register other vm is off
