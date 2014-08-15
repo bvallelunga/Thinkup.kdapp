@@ -1,6 +1,9 @@
-/* Compiled by kdc on Fri Aug 15 2014 19:30:33 GMT+0000 (UTC) */
+/* Compiled by kdc on Fri Aug 15 2014 19:46:10 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
+if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
+  var appView = window.appPreview
+}
 /* BLOCK STARTS: /home/bvallelunga/Applications/Thinkup.kdapp/config.coffee */
 var ABORT, FAILED, INSTALL, INSTALLED, NOT_INSTALLED, REINSTALL, UNINSTALL, WORKING, WRONG_PASSWORD, app, appName, configureURL, configuredChecker, description, domain, getSession, github, installChecker, launchURL, logger, logo, scripts, user, vmHostname, _ref;
 
@@ -69,19 +72,20 @@ SelectVm = (function(_super) {
   }
 
   SelectVm.prototype.viewAppended = function() {
-    var _this = this;
-    return this.kiteHelper.getReady().then(function() {
-      _this.addSubView(_this.header = new KDCustomHTMLView({
-        tagName: 'div',
-        cssClass: 'header',
-        partial: _this.namify(_this.kiteHelper.getVm())
-      }));
-      _this.addSubView(_this.selection = new KDCustomHTMLView({
-        tagName: 'div',
-        cssClass: 'selection'
-      }));
-      return _this.updateList();
-    });
+    return this.kiteHelper.getReady().then((function(_this) {
+      return function() {
+        _this.addSubView(_this.header = new KDCustomHTMLView({
+          tagName: 'div',
+          cssClass: 'header',
+          partial: _this.namify(_this.kiteHelper.getVm())
+        }));
+        _this.addSubView(_this.selection = new KDCustomHTMLView({
+          tagName: 'div',
+          cssClass: 'selection'
+        }));
+        return _this.updateList();
+      };
+    })(this));
   };
 
   SelectVm.prototype.namify = function(hostname) {
@@ -89,37 +93,38 @@ SelectVm = (function(_super) {
   };
 
   SelectVm.prototype.updateList = function() {
-    var vmController,
-      _this = this;
+    var vmController;
     this.selection.updatePartial("");
     vmController = KD.singletons.vmController;
-    return this.kiteHelper.getVms().forEach(function(vm) {
-      var vmItem;
-      _this.selection.addSubView(vmItem = new KDCustomHTMLView({
-        tagName: 'div',
-        cssClass: "item",
-        click: function() {
-          if (!_this.hasClass("disabled")) {
-            return _this.chooseVm(vm.hostnameAlias);
+    return this.kiteHelper.getVms().forEach((function(_this) {
+      return function(vm) {
+        var vmItem;
+        _this.selection.addSubView(vmItem = new KDCustomHTMLView({
+          tagName: 'div',
+          cssClass: "item",
+          click: function() {
+            if (!_this.hasClass("disabled")) {
+              return _this.chooseVm(vm.hostnameAlias);
+            }
           }
+        }));
+        if (vm.hostnameAlias === _this.kiteHelper.getVm()) {
+          vmItem.setClass("active");
         }
-      }));
-      if (vm.hostnameAlias === _this.kiteHelper.getVm()) {
-        vmItem.setClass("active");
-      }
-      vmItem.addSubView(new KDCustomHTMLView({
-        tagName: 'span',
-        cssClass: "bubble"
-      }));
-      vmItem.addSubView(new KDCustomHTMLView({
-        tagName: 'span',
-        cssClass: "name",
-        partial: _this.namify(vm.hostnameAlias)
-      }));
-      return vmController.info(vm.hostnameAlias, function(err, vmn, info) {
-        return vmItem.setClass(info != null ? info.state.toLowerCase() : void 0);
-      });
-    });
+        vmItem.addSubView(new KDCustomHTMLView({
+          tagName: 'span',
+          cssClass: "bubble"
+        }));
+        vmItem.addSubView(new KDCustomHTMLView({
+          tagName: 'span',
+          cssClass: "name",
+          partial: _this.namify(vm.hostnameAlias)
+        }));
+        return vmController.info(vm.hostnameAlias, function(err, vmn, info) {
+          return vmItem.setClass(info != null ? info.state.toLowerCase() : void 0);
+        });
+      };
+    })(this));
   };
 
   SelectVm.prototype.chooseVm = function(vm) {
@@ -130,27 +135,37 @@ SelectVm = (function(_super) {
   };
 
   SelectVm.prototype.turnOffVm = function(vm) {
-    var _this = this;
     this.installer.announce("Please wait while we turn off " + (this.namify(vm)) + "...", WORKING, 0);
-    return this.kiteHelper.turnOffVm(vm).then(function() {
-      return KD.utils.wait(10000, function() {
-        _this.installer.init();
-        return _this.updateList();
-      });
-    })["catch"](function(err) {
-      return _this.installer.error(err);
-    });
+    return this.kiteHelper.turnOffVm(vm).then((function(_this) {
+      return function() {
+        return KD.utils.wait(10000, function() {
+          _this.installer.init();
+          return _this.updateList();
+        });
+      };
+    })(this))["catch"]((function(_this) {
+      return function(err) {
+        return _this.installer.error(err);
+      };
+    })(this));
   };
 
   SelectVm.prototype.turnOffVmModal = function() {
-    var container, vmController,
-      _this = this;
-    if (!this.modal) {
-      vmController = KD.singletons.vmController;
-      this.addSubView(container = new KDCustomHTMLView({
-        tagName: 'div'
-      }));
-      this.kiteHelper.getVms().forEach(function(vm) {
+    var container, vmController;
+    if (this.modal) {
+      retun(this.modal);
+    }
+    vmController = KD.singletons.vmController;
+    this.addSubView(container = new KDCustomHTMLView({
+      tagName: 'div'
+    }));
+    container.addSubView(new KDCustomHTMLView({
+      tagName: 'div',
+      cssClass: "description",
+      partial: "Your plan's vm quota requires that you turn off one of your vms to use another"
+    }));
+    this.kiteHelper.getVms().forEach((function(_this) {
+      return function(vm) {
         var vmItem;
         container.addSubView(vmItem = new KDCustomHTMLView({
           tagName: 'div',
@@ -166,20 +181,22 @@ SelectVm = (function(_super) {
             return vmItem.destroy();
           }
         });
-      });
-      return this.modal = new KDModalView({
-        title: "Choose VM To Turn Off",
-        overlay: true,
-        overlayClick: false,
-        width: 400,
-        height: "auto",
-        cssClass: "new-kdmodal",
-        view: container,
-        cancel: function() {
+      };
+    })(this));
+    return this.modal = new KDModalView({
+      title: "Choose VM To Turn Off",
+      overlay: true,
+      overlayClick: false,
+      width: 400,
+      height: "auto",
+      cssClass: "new-kdmodal",
+      view: container,
+      cancel: (function(_this) {
+        return function() {
           return _this.removeModal();
-        }
-      });
-    }
+        };
+      })(this)
+    });
   };
 
   SelectVm.prototype.removeModal = function() {
@@ -221,30 +238,31 @@ KiteHelper = (function(_super) {
   }
 
   KiteHelper.prototype.getReady = function() {
-    var _this = this;
-    return new Promise(function(resolve, reject) {
-      var JVM;
-      JVM = KD.remote.api.JVM;
-      return JVM.fetchVmsByContext(function(err, vms) {
-        var alias, kiteController, vm, _i, _len;
-        if (err) {
-          console.warn(err);
-        }
-        if (!vms) {
-          return;
-        }
-        _this._vms = vms;
-        _this._kites = {};
-        kiteController = KD.singletons.kiteController;
-        for (_i = 0, _len = vms.length; _i < _len; _i++) {
-          vm = vms[_i];
-          alias = vm.hostnameAlias;
-          _this._kites[alias] = kiteController.getKite("os-" + vm.region, alias, 'os');
-        }
-        _this.emit('ready');
-        return resolve();
-      });
-    });
+    return new Promise((function(_this) {
+      return function(resolve, reject) {
+        var JVM;
+        JVM = KD.remote.api.JVM;
+        return JVM.fetchVmsByContext(function(err, vms) {
+          var alias, kiteController, vm, _i, _len;
+          if (err) {
+            console.warn(err);
+          }
+          if (!vms) {
+            return;
+          }
+          _this._vms = vms;
+          _this._kites = {};
+          kiteController = KD.singletons.kiteController;
+          for (_i = 0, _len = vms.length; _i < _len; _i++) {
+            vm = vms[_i];
+            alias = vm.hostnameAlias;
+            _this._kites[alias] = kiteController.getKite("os-" + vm.region, alias, 'os');
+          }
+          _this.emit('ready');
+          return resolve();
+        });
+      };
+    })(this));
   };
 
   KiteHelper.prototype.setDefaultVm = function(vm) {
@@ -260,10 +278,11 @@ KiteHelper = (function(_super) {
   };
 
   KiteHelper.prototype.getVms = function() {
-    var _this = this;
-    return this._vms.sort(function(a, b) {
-      return _this.getVMNumber(a) > _this.getVMNumber(b);
-    });
+    return this._vms.sort((function(_this) {
+      return function(a, b) {
+        return _this.getVMNumber(a) > _this.getVMNumber(b);
+      };
+    })(this));
   };
 
   KiteHelper.prototype.getVMNumber = function(_arg) {
@@ -273,87 +292,90 @@ KiteHelper = (function(_super) {
   };
 
   KiteHelper.prototype.turnOffVm = function(vm) {
-    var _this = this;
-    return new Promise(function(resolve, reject) {
-      return _this.getReady().then(function() {
-        var kite;
-        if (!(kite = _this._kites[vm])) {
-          return reject({
-            message: "No such kite for " + vm
-          });
-        }
-        return kite.vmOff().then(function() {
-          return _this.whenVmState(vm, "STOPPED").then(function() {
-            return resolve();
+    return new Promise((function(_this) {
+      return function(resolve, reject) {
+        return _this.getReady().then(function() {
+          var kite;
+          if (!(kite = _this._kites[vm])) {
+            return reject({
+              message: "No such kite for " + vm
+            });
+          }
+          return kite.vmOff().then(function() {
+            return _this.whenVmState(vm, "STOPPED").then(function() {
+              return resolve();
+            })["catch"](reject);
           })["catch"](reject);
         })["catch"](reject);
-      })["catch"](reject);
-    });
+      };
+    })(this));
   };
 
   KiteHelper.prototype.whenVmState = function(vm, state) {
-    var _this = this;
-    return new Promise(function(resolve, reject) {
-      var repeat, timeout, vmController, wait;
-      vmController = KD.singletons.vmController;
-      timeout = 10 * 60 * 1000;
-      repeat = KD.utils.repeat(1000, function() {
-        return vmController.info(vm, function(err, vmn, info) {
-          if ((info != null ? info.state : void 0) === state) {
+    return new Promise((function(_this) {
+      return function(resolve, reject) {
+        var repeat, timeout, vmController, wait;
+        vmController = KD.singletons.vmController;
+        timeout = 10 * 60 * 1000;
+        repeat = KD.utils.repeat(1000, function() {
+          return vmController.info(vm, function(err, vmn, info) {
+            if ((info != null ? info.state : void 0) === state) {
+              KD.utils.killRepeat(repeat);
+              KD.utils.killWait(wait);
+              return resolve();
+            }
+          });
+        });
+        return wait = KD.utils.wait(timeout, function() {
+          if (repeat != null) {
             KD.utils.killRepeat(repeat);
-            KD.utils.killWait(wait);
-            return resolve();
+            return reject();
           }
         });
-      });
-      return wait = KD.utils.wait(timeout, function() {
-        if (repeat != null) {
-          KD.utils.killRepeat(repeat);
-          return reject();
-        }
-      });
-    });
+      };
+    })(this));
   };
 
   KiteHelper.prototype.getKite = function() {
-    var _this = this;
-    return new Promise(function(resolve, reject) {
-      return _this.getReady().then(function() {
-        var kite, vm, vmController;
-        vm = _this.getVm();
-        vmController = KD.singletons.vmController;
-        if (!(kite = _this._kites[vm])) {
-          return reject({
-            message: "No such kite for " + vm
-          });
-        }
-        return vmController.info(vm, function(err, vmn, info) {
-          var timeout;
-          if (err) {
-            return reject(err);
+    return new Promise((function(_this) {
+      return function(resolve, reject) {
+        return _this.getReady().then(function() {
+          var kite, vm, vmController;
+          vm = _this.getVm();
+          vmController = KD.singletons.vmController;
+          if (!(kite = _this._kites[vm])) {
+            return reject({
+              message: "No such kite for " + vm
+            });
           }
-          if (!_this.vmIsStarting && info.state === "STOPPED") {
-            _this.vmIsStarting = true;
-            timeout = 10 * 60 * 1000;
-            kite.options.timeout = timeout;
-            return kite.vmOn().then(function() {
-              return _this.whenVmState(vm, "RUNNING").then(function() {
-                _this.vmIsStarting = false;
-                return resolve(kite);
-              })["catch"](function(err) {
+          return vmController.info(vm, function(err, vmn, info) {
+            var timeout;
+            if (err) {
+              return reject(err);
+            }
+            if (!_this.vmIsStarting && info.state === "STOPPED") {
+              _this.vmIsStarting = true;
+              timeout = 10 * 60 * 1000;
+              kite.options.timeout = timeout;
+              return kite.vmOn().then(function() {
+                return _this.whenVmState(vm, "RUNNING").then(function() {
+                  _this.vmIsStarting = false;
+                  return resolve(kite);
+                })["catch"](function(err) {
+                  _this.vmIsStarting = false;
+                  return reject(err);
+                });
+              }).timeout(timeout)["catch"](function(err) {
                 _this.vmIsStarting = false;
                 return reject(err);
               });
-            }).timeout(timeout)["catch"](function(err) {
-              _this.vmIsStarting = false;
-              return reject(err);
-            });
-          } else {
-            return resolve(kite);
-          }
+            } else {
+              return resolve(kite);
+            }
+          });
         });
-      });
-    });
+      };
+    })(this));
   };
 
   KiteHelper.prototype.run = function(options, callback) {
@@ -398,8 +420,7 @@ ThinkupInstallerController = (function(_super) {
   __extends(ThinkupInstallerController, _super);
 
   function ThinkupInstallerController(options, data) {
-    var thinkupInstallerController,
-      _this = this;
+    var thinkupInstallerController;
     if (options == null) {
       options = {};
     }
@@ -410,16 +431,20 @@ ThinkupInstallerController = (function(_super) {
     this.kiteHelper = options.kiteHelper;
     this.registerSingleton("thinkupInstallerController", this, true);
     this.appStorage = KD.getSingleton('appStorageController').storage('Thinkup', '0.0.1');
-    this.appStorage.fetchStorage(function() {
-      _this.password = _this.appStorage.getValue('demoPassword');
-      if (_this.password == null) {
-        _this.password = getSession();
-        return _this.appStorage.setValue('demoPassword', _this.password);
-      }
-    });
-    KD.remote.api.JUser.fetchUser(function(err, user) {
-      return _this.email = user.email;
-    });
+    this.appStorage.fetchStorage((function(_this) {
+      return function() {
+        _this.password = _this.appStorage.getValue('demoPassword');
+        if (_this.password == null) {
+          _this.password = getSession();
+          return _this.appStorage.setValue('demoPassword', _this.password);
+        }
+      };
+    })(this));
+    KD.remote.api.JUser.fetchUser((function(_this) {
+      return function(err, user) {
+        return _this.email = user.email;
+      };
+    })(this));
     ThinkupInstallerController.__super__.constructor.call(this, options, data);
   }
 
@@ -451,29 +476,31 @@ ThinkupInstallerController = (function(_super) {
   };
 
   ThinkupInstallerController.prototype.init = function() {
-    var _this = this;
     this.announce("Checking your vm's status...", WORKING, 0);
-    return this.kiteHelper.getKite().then(function(kite) {
-      _this.watcherDirectory();
-      return kite.fsExists({
-        path: installChecker
-      }).then(function(state) {
-        if (!state) {
-          return _this.announce("" + appName + " not installed", NOT_INSTALLED);
-        } else {
-          return _this.announce("" + appName + " is installed", INSTALLED);
-        }
-      })["catch"](function(err) {
+    return this.kiteHelper.getKite().then((function(_this) {
+      return function(kite) {
+        _this.watcherDirectory();
+        return kite.fsExists({
+          path: installChecker
+        }).then(function(state) {
+          if (!state) {
+            return _this.announce("" + appName + " not installed", NOT_INSTALLED);
+          } else {
+            return _this.announce("" + appName + " is installed", INSTALLED);
+          }
+        })["catch"](function(err) {
+          return _this.error(err);
+        });
+      };
+    })(this))["catch"]((function(_this) {
+      return function(err) {
         return _this.error(err);
-      });
-    })["catch"](function(err) {
-      return _this.error(err);
-    });
+      };
+    })(this));
   };
 
   ThinkupInstallerController.prototype.command = function(command, password, retry) {
-    var name, session,
-      _this = this;
+    var name, session;
     switch (command) {
       case INSTALL:
         name = "install";
@@ -492,66 +519,72 @@ ThinkupInstallerController = (function(_super) {
     this.lastCommand = command;
     this.announce("" + (this.namify(name)) + "ing " + appName + "...", null, 0);
     session = getSession();
-    return this.configureWatcher(session).then(function(watcher) {
-      return _this.kiteHelper.run({
-        command: "curl -sL " + scripts[name].url + " | bash -s " + user + " " + _this.email + " " + _this.password + " " + logger + "/" + session + "/ " + _this.mysqlPassword + " > " + logger + "/" + name + ".out",
-        password: scripts[name].sudo ? password : null
-      }, function(err, res) {
-        watcher.stopWatching();
-        if ((retry == null) && (err == null) && !res.stdout && !res.stderr) {
-          return _this.command(_this.lastCommand, password, true);
-        } else if ((err != null) || res.exitStatus !== 0) {
-          return _this.error(err || {
-            message: res.stderr
-          }, "Failed to " + name + " " + appName + ", please contact support if the issue continues");
-        } else {
-          return _this.init();
-        }
-      });
-    })["catch"](function(err) {
-      return _this.error(err);
-    });
+    return this.configureWatcher(session).then((function(_this) {
+      return function(watcher) {
+        return _this.kiteHelper.run({
+          command: "curl -sL " + scripts[name].url + " | bash -s " + user + " " + _this.email + " " + _this.password + " " + logger + "/" + session + "/ " + _this.mysqlPassword + " > " + logger + "/" + name + ".out",
+          password: scripts[name].sudo ? password : null
+        }, function(err, res) {
+          watcher.stopWatching();
+          if ((retry == null) && (err == null) && !res.stdout && !res.stderr) {
+            return _this.command(_this.lastCommand, password, true);
+          } else if ((err != null) || res.exitStatus !== 0) {
+            return _this.error(err || {
+              message: res.stderr
+            }, "Failed to " + name + " " + appName + ", please contact support if the issue continues");
+          } else {
+            return _this.init();
+          }
+        });
+      };
+    })(this))["catch"]((function(_this) {
+      return function(err) {
+        return _this.error(err);
+      };
+    })(this));
   };
 
   ThinkupInstallerController.prototype.configureWatcher = function(session, cb) {
-    var _this = this;
-    return new Promise(function(resolve, reject) {
-      return _this.kiteHelper.run({
-        command: "mkdir -p " + logger + "/" + session
-      }, function(err) {
-        var watcher;
-        if (!err) {
-          watcher = new FSWatcher({
-            path: "" + logger + "/" + session,
-            recursive: false,
-            vmName: _this.kiteHelper.getVm()
-          });
-          watcher.fileAdded = function(change) {
-            var name, percentage, status, _ref;
-            name = change.file.name;
-            _ref = name.split('-'), percentage = _ref[0], status = _ref[1];
-            if ((percentage != null) && (status != null)) {
-              return _this.announce(status, WORKING, percentage);
-            }
-          };
-          watcher.watch();
-          return resolve(watcher);
-        } else {
-          return reject(err);
-        }
-      });
-    });
+    return new Promise((function(_this) {
+      return function(resolve, reject) {
+        return _this.kiteHelper.run({
+          command: "mkdir -p " + logger + "/" + session
+        }, function(err) {
+          var watcher;
+          if (!err) {
+            watcher = new FSWatcher({
+              path: "" + logger + "/" + session,
+              recursive: false,
+              vmName: _this.kiteHelper.getVm()
+            });
+            watcher.fileAdded = function(change) {
+              var name, percentage, status, _ref;
+              name = change.file.name;
+              _ref = name.split('-'), percentage = _ref[0], status = _ref[1];
+              if ((percentage != null) && (status != null)) {
+                return _this.announce(status, WORKING, percentage);
+              }
+            };
+            watcher.watch();
+            return resolve(watcher);
+          } else {
+            return reject(err);
+          }
+        });
+      };
+    })(this));
   };
 
   ThinkupInstallerController.prototype.watcherDirectory = function() {
-    var _this = this;
     return this.kiteHelper.run({
       command: "mkdir -p " + logger + "/"
-    }, function(err) {
-      if (err != null) {
-        return _this.error(err);
-      }
-    });
+    }, (function(_this) {
+      return function(err) {
+        if (err != null) {
+          return _this.error(err);
+        }
+      };
+    })(this));
   };
 
   ThinkupInstallerController.prototype.updateState = function(state) {
@@ -566,17 +599,18 @@ ThinkupInstallerController = (function(_super) {
   };
 
   ThinkupInstallerController.prototype.isConfigured = function() {
-    var _this = this;
-    return new Promise(function(resolve, reject) {
-      if (!configuredChecker) {
-        return resolve(true);
-      }
-      return _this.kiteHelper.getKite().then(function(kite) {
-        return kite.fsExists({
-          path: configuredChecker
-        }).then(resolve)["catch"](reject);
-      });
-    });
+    return new Promise((function(_this) {
+      return function(resolve, reject) {
+        if (!configuredChecker) {
+          return resolve(true);
+        }
+        return _this.kiteHelper.getKite().then(function(kite) {
+          return kite.fsExists({
+            path: configuredChecker
+          }).then(resolve)["catch"](reject);
+        });
+      };
+    })(this));
   };
 
   return ThinkupInstallerController;
@@ -607,7 +641,6 @@ ThinkupMainView = (function(_super) {
   }
 
   ThinkupMainView.prototype.viewAppended = function() {
-    var _this = this;
     this.addSubView(this.wrapper = new KDCustomHTMLView({
       tagName: 'div',
       cssClass: 'wrapper'
@@ -656,24 +689,26 @@ ThinkupMainView = (function(_super) {
     this.container.addSubView(this.link = new KDCustomHTMLView({
       cssClass: 'hidden running-link'
     }));
-    this.link.setSession = function() {
-      return _this.installer.isConfigured().then(function(configured) {
-        var message, url;
-        if (configured) {
-          url = launchURL;
-          message = "Thinkup has been configured using these credentials:\n<br>\n<strong>Username:</strong> " + _this.installer.email + "\n<br>\n<strong>Password:</strong> " + _this.installer.password + "\n<br>";
-        } else {
-          url = configureURL;
-          message = "Please set the database to <strong>Thinkup</strong> when configuring the app.<br>";
-        }
-        url = "http://" + (_this.kiteHelper.getVm()) + url;
-        _this.link.updatePartial("" + message + "\nClick here to launch " + appName + ":\n<a target='_blank' href='" + url + "'>" + url + "</a>");
-        return _this.link.show();
-      })["catch"](function(error) {
-        console.error(error);
-        return _this.updateProgress("Failed to check if " + appName + " is configured.");
-      });
-    };
+    this.link.setSession = (function(_this) {
+      return function() {
+        return _this.installer.isConfigured().then(function(configured) {
+          var message, url;
+          if (configured) {
+            url = launchURL;
+            message = "Thinkup has been configured using these credentials:\n<br>\n<strong>Username:</strong> " + _this.installer.email + "\n<br>\n<strong>Password:</strong> " + _this.installer.password + "\n<br>";
+          } else {
+            url = configureURL;
+            message = "Please set the database to <strong>Thinkup</strong> when configuring the app.<br>";
+          }
+          url = "http://" + (_this.kiteHelper.getVm()) + url;
+          _this.link.updatePartial("" + message + "\nClick here to launch " + appName + ":\n<a target='_blank' href='" + url + "'>" + url + "</a>");
+          return _this.link.show();
+        })["catch"](function(error) {
+          console.error(error);
+          return _this.updateProgress("Failed to check if " + appName + " is configured.");
+        });
+      };
+    })(this);
     this.container.addSubView(this.buttonContainer = new KDCustomHTMLView({
       tagName: 'div',
       cssClass: 'button-container'
@@ -681,49 +716,56 @@ ThinkupMainView = (function(_super) {
     this.buttonContainer.addSubView(this.installButton = new KDButtonView({
       title: "Install " + appName,
       cssClass: 'button green solid hidden',
-      callback: function() {
-        return _this.passwordModal(false, function(password, mysqlPassword) {
-          if (password != null) {
-            return _this.installer.command(INSTALL, password);
-          }
-        });
-      }
+      callback: (function(_this) {
+        return function() {
+          return _this.passwordModal(false, function(password, mysqlPassword) {
+            if (password != null) {
+              return _this.installer.command(INSTALL, password);
+            }
+          });
+        };
+      })(this)
     }));
     this.buttonContainer.addSubView(this.reinstallButton = new KDButtonView({
       title: "Reinstall",
       cssClass: 'button solid hidden',
-      callback: function() {
-        return _this.passwordModal(false, function(password) {
-          if (password != null) {
-            return _this.installer.command(REINSTALL, password);
-          }
-        });
-      }
+      callback: (function(_this) {
+        return function() {
+          return _this.passwordModal(false, function(password) {
+            if (password != null) {
+              return _this.installer.command(REINSTALL, password);
+            }
+          });
+        };
+      })(this)
     }));
     this.buttonContainer.addSubView(this.uninstallButton = new KDButtonView({
       title: "Uninstall",
       cssClass: 'button red solid hidden',
-      callback: function() {
-        return _this.passwordModal(false, function(password) {
-          if (password != null) {
-            return _this.installer.command(UNINSTALL, password);
-          }
-        });
-      }
+      callback: (function(_this) {
+        return function() {
+          return _this.passwordModal(false, function(password) {
+            if (password != null) {
+              return _this.installer.command(UNINSTALL, password);
+            }
+          });
+        };
+      })(this)
     }));
     this.container.addSubView(new KDCustomHTMLView({
       cssClass: "description",
       partial: description
     }));
-    return KD.utils.defer(function() {
-      _this.installer.on("status-update", _this.bound("statusUpdate"));
-      return _this.installer.init();
-    });
+    return KD.utils.defer((function(_this) {
+      return function() {
+        _this.installer.on("status-update", _this.bound("statusUpdate"));
+        return _this.installer.init();
+      };
+    })(this));
   };
 
   ThinkupMainView.prototype.statusUpdate = function(message, percentage) {
-    var element, _i, _len, _ref,
-      _this = this;
+    var element, _i, _len, _ref;
     if (percentage == null) {
       percentage = 100;
     }
@@ -759,19 +801,20 @@ ThinkupMainView = (function(_super) {
         return this.updateProgress(message, percentage);
       case WRONG_PASSWORD:
         this.installer.state = this.installer.lastState;
-        return this.passwordModal(true, function(password) {
-          if (password != null) {
-            return _this.installer.command(_this.installer.lastCommand, password);
-          }
-        });
+        return this.passwordModal(true, (function(_this) {
+          return function(password) {
+            if (password != null) {
+              return _this.installer.command(_this.installer.lastCommand, password);
+            }
+          };
+        })(this));
       default:
         return this.updateProgress(message, percentage);
     }
   };
 
   ThinkupMainView.prototype.passwordModal = function(error, cb) {
-    var fields, title,
-      _this = this;
+    var fields, title;
     if (this.modal) {
       return this.modal;
     }
@@ -805,19 +848,23 @@ ThinkupMainView = (function(_super) {
       width: 550,
       height: "auto",
       cssClass: "new-kdmodal",
-      cancel: function() {
-        _this.modal.destroy();
-        delete _this.modal;
-        return cb();
-      },
-      tabs: {
-        navigable: true,
-        callback: function(form) {
+      cancel: (function(_this) {
+        return function() {
           _this.modal.destroy();
           delete _this.modal;
-          _this.installer.mysqlPassword = form.mysqlPassword;
-          return cb(form.password);
-        },
+          return cb();
+        };
+      })(this),
+      tabs: {
+        navigable: true,
+        callback: (function(_this) {
+          return function(form) {
+            _this.modal.destroy();
+            delete _this.modal;
+            _this.installer.mysqlPassword = form.mysqlPassword;
+            return cb(form.password);
+          };
+        })(this),
         forms: {
           "Koding Passwords": {
             buttons: {

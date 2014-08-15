@@ -67,36 +67,45 @@ class SelectVm extends KDView
       @installer.error err
 
   turnOffVmModal: ->
-      unless @modal
-        {vmController} = KD.singletons
-        @addSubView container = new KDCustomHTMLView
-            tagName         : 'div'
+    if @modal
+      retun @modal
 
-        @kiteHelper.getVms().forEach (vm)=>
-          container.addSubView vmItem = new KDCustomHTMLView
-            tagName       : 'div'
-            cssClass      : "item"
-            partial       : """
-              <div class="bubble"></div>
-              #{vm.hostnameAlias}
-            """
-            click         : (event)=>
-              @turnOffVm vm.hostnameAlias
-              @removeModal()
+    {vmController} = KD.singletons
+    @addSubView container = new KDCustomHTMLView
+        tagName         : 'div'
 
-          vmController.info vm.hostnameAlias, (err, vmn, info)=>
-            if info?.state != "RUNNING"
-              vmItem.destroy()
+    container.addSubView new KDCustomHTMLView
+        tagName       : 'div'
+        cssClass      : "description"
+        partial       : """
+          Your plan's vm quota requires that you turn off one of your vms to use another
+        """
 
-        @modal = new KDModalView
-          title           : "Choose VM To Turn Off"
-          overlay         : yes
-          overlayClick    : no
-          width           : 400
-          height          : "auto"
-          cssClass        : "new-kdmodal"
-          view            : container
-          cancel          : => @removeModal()
+    @kiteHelper.getVms().forEach (vm)=>
+      container.addSubView vmItem = new KDCustomHTMLView
+        tagName       : 'div'
+        cssClass      : "item"
+        partial       : """
+          <div class="bubble"></div>
+          #{vm.hostnameAlias}
+        """
+        click         : (event)=>
+          @turnOffVm vm.hostnameAlias
+          @removeModal()
+
+      vmController.info vm.hostnameAlias, (err, vmn, info)=>
+        if info?.state != "RUNNING"
+          vmItem.destroy()
+
+    @modal = new KDModalView
+      title           : "Choose VM To Turn Off"
+      overlay         : yes
+      overlayClick    : no
+      width           : 400
+      height          : "auto"
+      cssClass        : "new-kdmodal"
+      view            : container
+      cancel          : => @removeModal()
 
   removeModal: ->
     @modal.destroy()

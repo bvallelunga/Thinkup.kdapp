@@ -9,6 +9,11 @@
   display: list-item;
   text-align: -webkit-match-parent;
 }
+.new-kdmodal .description {
+  text-align: center;
+  margin: 0 0 10px 0;
+  color: #BB3C2A;
+}
 .new-kdmodal .item {
   position: relative;
   cursor: pointer;
