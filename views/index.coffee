@@ -63,10 +63,7 @@ class ThinkupMainView extends KDView
 
     @link.setSession = =>
       @installer.isConfigured().then (configured)=>
-        unless configured
-          url     = configureURL
-          message = "Please set the database to <strong>Thinkup</strong> when configuring the app.<br>"
-        else
+        if configured
           url     = launchURL
           message = """
             Thinkup has been configured using these credentials:
@@ -76,6 +73,9 @@ class ThinkupMainView extends KDView
             <strong>Password:</strong> #{@installer.password}
             <br>
           """
+        else
+          url     = configureURL
+          message = "Please set the database to <strong>Thinkup</strong> when configuring the app.<br>"
 
         url = "http://#{@kiteHelper.getVm()}#{url}"
 
@@ -98,24 +98,21 @@ class ThinkupMainView extends KDView
       cssClass      : 'button green solid hidden'
       callback      : =>
         @passwordModal no, (password, mysqlPassword)=>
-          if password?
-            @installer.command INSTALL, password
+          @installer.command INSTALL, password if password?
 
     @buttonContainer.addSubView @reinstallButton = new KDButtonView
       title         : "Reinstall"
       cssClass      : 'button solid hidden'
       callback      : =>
         @passwordModal no, (password)=>
-          if password?
-            @installer.command REINSTALL, password
+          @installer.command REINSTALL, password if password?
 
     @buttonContainer.addSubView @uninstallButton = new KDButtonView
       title         : "Uninstall"
       cssClass      : 'button red solid hidden'
       callback      : =>
         @passwordModal no, (password)=>
-          if password?
-            @installer.command UNINSTALL, password
+          @installer.command UNINSTALL, password if password?
 
     @container.addSubView new KDCustomHTMLView
       cssClass : "description"
@@ -164,51 +161,53 @@ class ThinkupMainView extends KDView
         @updateProgress message, percentage
 
   passwordModal: (error, cb)->
-    unless @modal
-      unless error
-        title = "#{appName} needs your Koding passwords"
-      else
-        title = "Incorrect password, please try again"
+    if @modal
+      return @modal
 
-      fields =
-        password        :
-          type          : "password"
-          placeholder   : "sudo password..."
-          validate      :
-            rules       :
-              required  : yes
-            messages    :
-              required  : "password is required!"
-        mysqlPassword   :
-          type          : "password"
-          placeholder   : "mysql root password (leave blank if no password)..."
+    if error
+      title = "Incorrect password, please try again"
+    else
+      title = "#{appName} needs your Koding passwords"
 
-      @modal = new KDModalViewWithForms
-        title           : title
-        overlay         : yes
-        overlayClick    : no
-        width           : 550
-        height          : "auto"
-        cssClass        : "new-kdmodal"
-        cancel          : =>
+    fields =
+      password        :
+        type          : "password"
+        placeholder   : "sudo password..."
+        validate      :
+          rules       :
+            required  : yes
+          messages    :
+            required  : "password is required!"
+      mysqlPassword   :
+        type          : "password"
+        placeholder   : "mysql root password (leave blank if no password)..."
+
+    @modal = new KDModalViewWithForms
+      title           : title
+      overlay         : yes
+      overlayClick    : no
+      width           : 550
+      height          : "auto"
+      cssClass        : "new-kdmodal"
+      cancel          : =>
+        @modal.destroy()
+        delete @modal
+        cb()
+      tabs                    :
+        navigable             : yes
+        callback              : (form)=>
           @modal.destroy()
           delete @modal
-          cb()
-        tabs                    :
-          navigable             : yes
-          callback              : (form)=>
-            @modal.destroy()
-            delete @modal
-            @installer.mysqlPassword = form.mysqlPassword
-            cb form.password
-          forms                 :
-            "Koding Passwords"  :
-              buttons           :
-                Next            :
-                  title         : "Submit"
-                  style         : "modal-clean-green"
-                  type          : "submit"
-              fields            : fields
+          @installer.mysqlPassword = form.mysqlPassword
+          cb form.password
+        forms                 :
+          "Koding Passwords"  :
+            buttons           :
+              Next            :
+                title         : "Submit"
+                style         : "modal-clean-green"
+                type          : "submit"
+            fields            : fields
 
 
   updateProgress: (status, percentage, override)->

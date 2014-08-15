@@ -1,4 +1,4 @@
-/* Compiled by kdc on Fri Aug 15 2014 02:02:47 GMT+0000 (UTC) */
+/* Compiled by kdc on Fri Aug 15 2014 19:20:50 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -39,15 +39,15 @@ logger = "/tmp/_" + appName + "Installer." + (getSession()) + ".out";
 
 scripts = {
   install: {
-    url: "https://" + domain + "/scripts/install.sh",
+    url: "" + github + "/scripts/install.sh",
     sudo: true
   },
   reinstall: {
-    url: "https://" + domain + "/scripts/reinstall.sh",
+    url: "" + github + "/scripts/reinstall.sh",
     sudo: true
   },
   uninstall: {
-    url: "https://" + domain + "/scripts/uninstall.sh",
+    url: "" + github + "/scripts/uninstall.sh",
     sudo: true
   }
 };
@@ -246,7 +246,7 @@ KiteHelper = (function(_super) {
           }
           _this._vms = vms;
           _this._kites = {};
-          kiteController = KD.getSingleton('kiteController');
+          kiteController = KD.singletons.kiteController;
           for (_i = 0, _len = vms.length; _i < _len; _i++) {
             vm = vms[_i];
             alias = vm.hostnameAlias;
@@ -344,6 +344,9 @@ KiteHelper = (function(_super) {
           }
           return vmController.info(vm, function(err, vmn, info) {
             var timeout;
+            if (err) {
+              return reject(err);
+            }
             if (!_this.vmIsStarting && info.state === "STOPPED") {
               _this.vmIsStarting = true;
               timeout = 10 * 60 * 1000;
@@ -684,12 +687,12 @@ ThinkupMainView = (function(_super) {
       return function() {
         return _this.installer.isConfigured().then(function(configured) {
           var message, url;
-          if (!configured) {
-            url = configureURL;
-            message = "Please set the database to <strong>Thinkup</strong> when configuring the app.<br>";
-          } else {
+          if (configured) {
             url = launchURL;
             message = "Thinkup has been configured using these credentials:\n<br>\n<strong>Username:</strong> " + _this.installer.email + "\n<br>\n<strong>Password:</strong> " + _this.installer.password + "\n<br>";
+          } else {
+            url = configureURL;
+            message = "Please set the database to <strong>Thinkup</strong> when configuring the app.<br>";
           }
           url = "http://" + (_this.kiteHelper.getVm()) + url;
           _this.link.updatePartial("" + message + "\nClick here to launch " + appName + ":\n<a target='_blank' href='" + url + "'>" + url + "</a>");
@@ -806,69 +809,70 @@ ThinkupMainView = (function(_super) {
 
   ThinkupMainView.prototype.passwordModal = function(error, cb) {
     var fields, title;
-    if (!this.modal) {
-      if (!error) {
-        title = "" + appName + " needs your Koding passwords";
-      } else {
-        title = "Incorrect password, please try again";
-      }
-      fields = {
-        password: {
-          type: "password",
-          placeholder: "sudo password...",
-          validate: {
-            rules: {
-              required: true
-            },
-            messages: {
-              required: "password is required!"
-            }
+    if (this.modal) {
+      return this.modal;
+    }
+    if (error) {
+      title = "Incorrect password, please try again";
+    } else {
+      title = "" + appName + " needs your Koding passwords";
+    }
+    fields = {
+      password: {
+        type: "password",
+        placeholder: "sudo password...",
+        validate: {
+          rules: {
+            required: true
+          },
+          messages: {
+            required: "password is required!"
           }
-        },
-        mysqlPassword: {
-          type: "password",
-          placeholder: "mysql root password (leave blank if no password)..."
         }
-      };
-      return this.modal = new KDModalViewWithForms({
-        title: title,
-        overlay: true,
-        overlayClick: false,
-        width: 550,
-        height: "auto",
-        cssClass: "new-kdmodal",
-        cancel: (function(_this) {
-          return function() {
+      },
+      mysqlPassword: {
+        type: "password",
+        placeholder: "mysql root password (leave blank if no password)..."
+      }
+    };
+    return this.modal = new KDModalViewWithForms({
+      title: title,
+      overlay: true,
+      overlayClick: false,
+      width: 550,
+      height: "auto",
+      cssClass: "new-kdmodal",
+      cancel: (function(_this) {
+        return function() {
+          _this.modal.destroy();
+          delete _this.modal;
+          return cb();
+        };
+      })(this),
+      tabs: {
+        navigable: true,
+        callback: (function(_this) {
+          return function(form) {
             _this.modal.destroy();
             delete _this.modal;
-            return cb();
+            _this.installer.mysqlPassword = form.mysqlPassword;
+            return cb(form.password);
           };
         })(this),
-        tabs: {
-          navigable: true,
-          callback: (function(_this) {
-            return function(form) {
-              _this.modal.destroy();
-              delete _this.modal;
-              _this.installer.mysqlPassword = form.mysqlPassword;
-              return cb(form.password);
-            };
-          })(this),
-          forms: {
-            "Koding Passwords": {
-              buttons: {
-                Next: {
-                  title: "Submit",
-                  style: "modal-clean-green",
-                  type: "submit"
-                }
-              },
-              fields: fields
-            }
+        forms: {
+          "Koding Passwords": {
+            buttons: {
+              Next: {
+                title: "Submit",
+                style: "modal-clean-green",
+                type: "submit"
+              }
+            },
+            fields: fields
           }
         }
-      });
-    }
+      }
+    });
   };
 
   ThinkupMainView.prototype.updateProgress = function(status, percentage, override) {

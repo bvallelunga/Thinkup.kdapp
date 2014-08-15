@@ -18,7 +18,7 @@ class KiteHelper extends KDController
         @_vms = vms
         @_kites = {}
 
-        kiteController = KD.getSingleton 'kiteController'
+        {kiteController} = KD.singletons
 
         for vm in vms
           alias = vm.hostnameAlias
@@ -76,8 +76,6 @@ class KiteHelper extends KDController
           KD.utils.killRepeat repeat
           reject()
 
-
-
   getKite:->
     new Promise (resolve, reject)=>
       @getReady().then =>
@@ -89,6 +87,9 @@ class KiteHelper extends KDController
             message: "No such kite for #{vm}"
 
         vmController.info vm, (err, vmn, info)=>
+          if err
+            return reject err
+
           if not @vmIsStarting and info.state is "STOPPED"
             @vmIsStarting = true
             timeout = 10 * 60 * 1000
