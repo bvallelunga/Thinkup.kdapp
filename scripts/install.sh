@@ -34,11 +34,9 @@ sudo chmod -R 755 /home/$USER/Web/thinkup
 sudo chown -R www-data /home/$USER/Web/thinkup
 
 touch $OUT/"80-Restarting MYSQL"
-sudo rm /etc/init/mysql.override
 sudo service mysql restart
 
 touch $OUT/"90-Restarting Apache"
-sudo rm /etc/init/apache.override;
 sudo service apache2 restart
 
 touch $OUT/"100-Configuring Thinkup"
