@@ -222,14 +222,25 @@
   -moz-border-radius: 3px;
   border-radius: 3px;
 }
+.Thinkup-installer .wrapper .container .vm-instructions {
+  text-align: center;
+  padding: 12px 0;
+  background: #FCFCFC;
+  line-height: 22px;
+  border: solid 1px #efefef;
+  border-top: none;
+  font-weight: bold;
+  -webkit-border-radius: 0 0 4px 4px;
+  -moz-border-radius: 0 0 4px 4px;
+  border-radius: 0 0 4px 4px;
+}
 .Thinkup-installer .wrapper .container .running-link {
   text-align: center;
   padding: 12px 0;
   background: #FCFCFC;
-  margin-bottom: 15px;
+  margin: -5px 0 15px 0;
   line-height: 22px;
   border: solid 1px #efefef;
-  border-top: none;
   -webkit-border-radius: 0 0 4px 4px;
   -moz-border-radius: 0 0 4px 4px;
   border-radius: 0 0 4px 4px;

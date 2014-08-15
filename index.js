@@ -1,4 +1,4 @@
-/* Compiled by kdc on Fri Aug 15 2014 19:46:10 GMT+0000 (UTC) */
+/* Compiled by kdc on Fri Aug 15 2014 23:19:53 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -685,6 +685,11 @@ ThinkupMainView = (function(_super) {
         width: 20
       },
       cssClass: "spinner"
+    }));
+    this.container.addSubView(new KDCustomHTMLView({
+      tagName: 'div',
+      cssClass: 'vm-instructions',
+      partial: "Please select which vm to work with using the dropdown."
     }));
     this.container.addSubView(this.link = new KDCustomHTMLView({
       cssClass: 'hidden running-link'

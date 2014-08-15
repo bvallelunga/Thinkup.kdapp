@@ -58,6 +58,11 @@ class ThinkupMainView extends KDView
         width       : 20
       cssClass      : "spinner"
 
+    @container.addSubView new KDCustomHTMLView
+      tagName  : 'div'
+      cssClass : 'vm-instructions'
+      partial  : "Please select which vm to work with using the dropdown."
+
     @container.addSubView @link = new KDCustomHTMLView
       cssClass : 'hidden running-link'
 
