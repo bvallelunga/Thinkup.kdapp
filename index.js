@@ -1,4 +1,4 @@
-/* Compiled by kdc on Thu Aug 14 2014 23:02:26 GMT+0000 (UTC) */
+/* Compiled by kdc on Fri Aug 15 2014 01:34:19 GMT+0000 (UTC) */
 (function() {
 /* KDAPP STARTS */
 if (typeof window.appPreview !== "undefined" && window.appPreview !== null) {
@@ -421,6 +421,21 @@ ThinkupInstallerController = (function(_super) {
     }
     this.kiteHelper = options.kiteHelper;
     this.registerSingleton("thinkupInstallerController", this, true);
+    this.appStorage = KD.getSingleton('appStorageController').storage('Thinkup', '0.0.1');
+    this.appStorage.fetchStorage((function(_this) {
+      return function() {
+        _this.demoPassword = _this.appStorage.getValue('demoPassword');
+        if (_this.demoPassword == null) {
+          _this.demoPassword = getSession();
+          return _this.appStorage.setValue('demoPassword', _this.demoPassword);
+        }
+      };
+    })(this));
+    KD.remote.api.JUser.fetchUser((function(_this) {
+      return function(err, user) {
+        return _this.demoEmail = user.email;
+      };
+    })(this));
     ThinkupInstallerController.__super__.constructor.call(this, options, data);
   }
 
@@ -498,7 +513,7 @@ ThinkupInstallerController = (function(_super) {
     return this.configureWatcher(session).then((function(_this) {
       return function(watcher) {
         return _this.kiteHelper.run({
-          command: "curl -sL " + scripts[name].url + " | bash -s " + user + " " + logger + "/" + session + "/ " + _this.mysqlPassword + " > " + logger + "/" + name + ".out",
+          command: "curl -sL " + scripts[name].url + " | bash -s " + user + " " + logger + "/" + session + "/ " + _this.mysqlPassword + " " + (encodeURIComponent(_this.demoEmail)) + " " + (encodeURIComponent(_this.demoPassword)) + " > " + logger + "/" + name + ".out",
           password: scripts[name].sudo ? password : null
         }, function(err, res) {
           watcher.stopWatching();
@@ -674,7 +689,7 @@ ThinkupMainView = (function(_super) {
             message = "Please set the database to <strong>Thinkup</strong> when configuring the app.<br>";
           } else {
             url = launchURL;
-            message = "Thinkup has been configured for a demo using these credentials:\n<br>\n<strong>Username:</strong> demo@koding.com\n<br>\n<strong>Password:</strong> demo1234\n<br>";
+            message = "Thinkup has been configured using these credentials:\n<br>\n<strong>Username:</strong> " + _this.installer.demoEmail + "\n<br>\n<strong>Password:</strong> " + _this.installer.demoPassword + "\n<br>";
           }
           url = "http://" + (_this.kiteHelper.getVm()) + url;
           _this.link.updatePartial("" + message + "\nClick here to launch " + appName + ":\n<a target='_blank' href='" + url + "'>" + url + "</a>");

@@ -2,6 +2,8 @@
 USER=$1
 OUT=$2
 MYSQL_PASSWORD=$3
+EMAIL=$4
+PASSWORD=$5
 
 if [ -z "$MYSQL_PASSWORD" ]
 then
@@ -46,9 +48,9 @@ sudo service apache2 restart
 touch $OUT/"100-Configuring Thinkup"
 curl -X POST "http://localhost/thinkup/install/index.php?step=3"     \
   -d "full_name=Demo%20User"                                         \
-  -d "site_email=demo%40koding.com"                                  \
-  -d "password=demo1234"                                             \
-  -d "confirm_password=demo1234"                                     \
+  -d "site_email=$EMAIL"                                             \
+  -d "password=$PASSWORD"                                            \
+  -d "confirm_password=$PASSWORD"                                    \
   -d "timezone=America%2FLos_Angeles"                                \
   -d "db_host=localhost"                                             \
   -d "db_name=Thinkup"                                               \
@@ -57,5 +59,6 @@ curl -X POST "http://localhost/thinkup/install/index.php?step=3"     \
   -d "db_socket="                                                    \
   -d "db_port="                                                      \
   -d "db_prefix=tu_"
+
 
 eval "$MYSQL -e 'USE Thinkup; UPDATE tu_owners SET is_activated=1;'"

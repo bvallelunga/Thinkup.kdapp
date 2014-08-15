@@ -69,11 +69,11 @@ class ThinkupMainView extends KDView
         else
           url     = launchURL
           message = """
-            Thinkup has been configured for a demo using these credentials:
+            Thinkup has been configured using these credentials:
             <br>
-            <strong>Username:</strong> demo@koding.com
+            <strong>Username:</strong> #{@installer.demoEmail}
             <br>
-            <strong>Password:</strong> demo1234
+            <strong>Password:</strong> #{@installer.demoPassword}
             <br>
           """
 

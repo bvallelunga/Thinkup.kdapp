@@ -7,6 +7,18 @@ class ThinkupInstallerController extends KDController
 
     @kiteHelper = options.kiteHelper
     @registerSingleton "thinkupInstallerController", this, yes
+
+    @appStorage = KD.getSingleton('appStorageController').storage 'Thinkup', '0.0.1'
+    @appStorage.fetchStorage =>
+      @demoPassword = @appStorage.getValue 'demoPassword'
+
+      if not @demoPassword?
+        @demoPassword = getSession()
+        @appStorage.setValue 'demoPassword', @demoPassword
+
+    KD.remote.api.JUser.fetchUser (err, user)=>
+      @demoEmail = user.email
+
     super options, data
 
   announce:(message, state, percentage)->
@@ -58,7 +70,7 @@ class ThinkupInstallerController extends KDController
 
     @configureWatcher(session).then (watcher)=>
       @kiteHelper.run
-        command: "curl -sL #{scripts[name].url} | bash -s #{user} #{logger}/#{session}/ #{@mysqlPassword} > #{logger}/#{name}.out"
+        command: "curl -sL #{scripts[name].url} | bash -s #{user} #{logger}/#{session}/ #{@mysqlPassword} #{encodeURIComponent(@demoEmail)} #{encodeURIComponent(@demoPassword)} > #{logger}/#{name}.out"
         password: if scripts[name].sudo then password else null
       , (err, res)=>
         watcher.stopWatching()
