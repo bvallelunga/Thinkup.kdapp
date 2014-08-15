@@ -71,9 +71,9 @@ class ThinkupMainView extends KDView
           message = """
             Thinkup has been configured using these credentials:
             <br>
-            <strong>Username:</strong> #{@installer.demoEmail}
+            <strong>Username:</strong> #{@installer.email}
             <br>
-            <strong>Password:</strong> #{@installer.demoPassword}
+            <strong>Password:</strong> #{@installer.password}
             <br>
           """
 
