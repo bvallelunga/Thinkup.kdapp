@@ -70,7 +70,7 @@ class ThinkupInstallerController extends KDController
 
     @configureWatcher(session).then (watcher)=>
       @kiteHelper.run
-        command: "curl -sL #{scripts[name].url} | bash -s #{user} #{logger}/#{session}/ #{@mysqlPassword} #{encodeURIComponent(@demoEmail)} #{encodeURIComponent(@demoPassword)} > #{logger}/#{name}.out"
+        command: "curl -sL #{scripts[name].url} | bash -s #{user} #{@demoEmail} #{@demoPassword} #{logger}/#{session}/ #{@mysqlPassword} > #{logger}/#{name}.out"
         password: if scripts[name].sudo then password else null
       , (err, res)=>
         watcher.stopWatching()
